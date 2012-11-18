@@ -797,11 +797,11 @@ namespace netgen
     int nparts = ntasks-1;
     int edgecut;
 
-
     int ncommon = 3;
     METIS_PartMeshDual (&ne, &nn, &eptr[0], &eind[0], NULL, NULL, &ncommon, &nparts,
 			NULL, NULL,
 			&edgecut, &epart[0], &npart[0]);
+
     /*
     METIS_PartMeshNodal (&ne, &nn, &eptr[0], &eind[0], NULL, NULL, &nparts,
 			 NULL, NULL,

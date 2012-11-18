@@ -1,4 +1,4 @@
-AC_INIT([netgen],[5.0-dev],[],[])
+AC_INIT([netgen],[5.1-dev],[],[])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -15,6 +15,10 @@ AC_DISABLE_STATIC
 
 AC_LANG([C++])
 AC_PROG_CXX
+
+AC_OPENMP
+CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
+
 AC_PROG_LIBTOOL
 LT_INIT
 
@@ -92,7 +96,8 @@ AC_ARG_WITH([metis],
 
 AC_ARG_ENABLE([parallel],
         [AC_HELP_STRING([--enable-parallel],[enable mpi parallelization])],
-	[AC_SUBST([MPI_INCLUDES], "-DPARALLEL -I$metisdir/include -DMETIS")]
+	[AC_SUBST([MPI_INCLUDES], "-I$metisdir/include -DMETIS")]
+        [CXXFLAGS="$CXXFLAGS -DPARALLEL"]
 	[AC_SUBST([MPI_LIBS], "-L$metisdir/lib -lmetis")]
         )       
 #          -DVTRACE
