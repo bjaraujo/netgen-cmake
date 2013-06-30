@@ -17,7 +17,7 @@ namespace netgen
     for ( int i = 0; i < bcnames.Size(); i++ )
       delete bcnames[i];
     for (int i=0; i<materials.Size(); i++)
-      delete materials[i];
+      delete [] materials[i];
   }
 
 
@@ -694,20 +694,21 @@ namespace netgen
 		// hd is now optional, default 1
 		//  infile >> hd;
 		hd = 1;
+
 		infile >> ch;
 	      
 		// get refinement parameter, if it is there
 		//infile.get (ch);
 		// if another int-value, set refinement flag to this value
 		// (corresponding to old files)
-
+                /*
 		if ( int (ch) >= 48 && int(ch) <= 57 )
 		  {
 		    infile.putback(ch);
 		    infile >> hd;
 		    infile >> ch ;
 		  }
-
+                */
 		// get flags, 
 		Flags flags;
 		while (ch == '-')
@@ -944,5 +945,42 @@ namespace netgen
   {
     return * new Refinement2d (*this);
   }
+
+
+
+  class SplineGeometryRegister : public GeometryRegister
+  {
+  public:
+    virtual NetgenGeometry * Load (string filename) const;
+  };
+
+  NetgenGeometry *  SplineGeometryRegister :: Load (string filename) const
+  {
+    const char * cfilename = filename.c_str();
+    if (strcmp (&cfilename[strlen(cfilename)-4], "in2d") == 0)
+      {
+	PrintMessage (1, "Load 2D-Spline geometry file ", cfilename);
+	
+
+	ifstream infile(cfilename);
+
+	SplineGeometry2d * hgeom = new SplineGeometry2d();
+	hgeom -> Load (cfilename);
+	return hgeom;
+      }
+    
+    return NULL;
+  }
+
+  class SplineGeoInit
+  {
+  public:
+    SplineGeoInit()
+    {
+      geometryregister.Append (new SplineGeometryRegister);
+    }
+  };
+
+  SplineGeoInit sginit;
 
 }

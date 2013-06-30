@@ -37,24 +37,34 @@ SET_TARGET_PROPERTIES(${_curr_libName}
 SET(NETGEN_INT_LIBS ${NETGEN_INT_LIBS} ${_curr_libName} CACHE INTERNAL "Internal Libraries to be linked to the executable")
 
 
-# Create the Visualisation Package
-GET_FILENAME_COMPONENT(_curr_visLibName ${CURRENT_SRC_PATH} NAME)
-SET(_curr_visLibName "${_curr_visLibName}vis")
-ADD_LIBRARY (${_curr_visLibName} ${${PROJECT_NAME}_LIBRARY_TYPE} ${VS_SRCS})
-TARGET_LINK_LIBRARIES(${_curr_visLibName} LINK_INTERFACE_LIBRARIES)
-TARGET_LINK_LIBRARIES(${_curr_visLibName} ${_curr_libName})
-SET_TARGET_PROPERTIES(${_curr_visLibName}
-                      PROPERTIES
-					  SOVERSION ${NETGEN_LIB_SOVERSION}
-					  VERSION ${NETGEN_LIB_VERSION}
-					  )
+# Create the Visualisation Package only if the GUI is being built
+IF(${PROJECT_NAME}_BUILD_GUI)
+	GET_FILENAME_COMPONENT(_curr_visLibName ${CURRENT_SRC_PATH} NAME)
+	SET(_curr_visLibName "${_curr_visLibName}vis")
+	ADD_LIBRARY (${_curr_visLibName} ${${PROJECT_NAME}_LIBRARY_TYPE} ${VS_SRCS})
+	TARGET_LINK_LIBRARIES(${_curr_visLibName} LINK_INTERFACE_LIBRARIES)
+	TARGET_LINK_LIBRARIES(${_curr_visLibName} ${_curr_libName})
+	SET_TARGET_PROPERTIES(${_curr_visLibName}
+						  PROPERTIES
+						  SOVERSION ${NETGEN_LIB_SOVERSION}
+						  VERSION ${NETGEN_LIB_VERSION}
+						  )
 
-SET(NETGEN_VIS_LIBS ${NETGEN_VIS_LIBS} ${_curr_visLibName} CACHE INTERNAL "Internal Visualisation Libraries to be linked to the executable")					  
-
+	SET(NETGEN_VIS_LIBS ${NETGEN_VIS_LIBS} ${_curr_visLibName} CACHE INTERNAL "Internal Visualisation Libraries to be linked to the executable")					  
+ENDIF(${PROJECT_NAME}_BUILD_GUI)
+	
 
 IF(${${PROJECT_NAME}_LIBRARY_TYPE} STREQUAL "SHARED")
-	INSTALL(TARGETS ${_curr_libName} ${_curr_visLibName}
+	INSTALL(TARGETS ${_curr_libName}
 			RUNTIME DESTINATION bin
 			LIBRARY DESTINATION lib
 			)
+			
+	# Install the Visualisation libraries only if the GUI is being built
+	IF(${PROJECT_NAME}_BUILD_GUI)
+		INSTALL(TARGETS ${_curr_visLibName}
+				RUNTIME DESTINATION bin
+				LIBRARY DESTINATION lib
+				)
+	ENDIF(${PROJECT_NAME}_BUILD_GUI)
 ENDIF(${${PROJECT_NAME}_LIBRARY_TYPE} STREQUAL "SHARED")			

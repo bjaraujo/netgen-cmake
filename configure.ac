@@ -18,6 +18,7 @@ AC_PROG_CXX
 
 AC_OPENMP
 CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
+LDFLAGS="$LDFLAGS $OPENMP_CXXFLAGS"
 
 AC_PROG_LIBTOOL
 LT_INIT
@@ -137,7 +138,11 @@ AC_ARG_ENABLE([ffmpeg],
         )               
 
 
-
+mklon=false
+AC_ARG_ENABLE([mkl],
+        [AS_HELP_STRING([--enable-mkl],[link Intel's mkl library, necessary for ngsolve and mkl 11.x])],
+        [if test "$enableval" = yes; then mklon=true; else mklon=false; fi]
+        )
 
 # only for GUI version 
 
@@ -194,6 +199,7 @@ fi
 
 AM_CONDITIONAL([NGLIB], [test x$nglibon = xtrue])
 AM_CONDITIONAL([NGGUI], [test x$ngguion = xtrue])
+AM_CONDITIONAL([NGMKL], [test x$mklon = xtrue])
 
 AC_CHECK_HEADER(pthread.h)
 

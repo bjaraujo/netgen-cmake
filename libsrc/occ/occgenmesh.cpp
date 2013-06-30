@@ -1266,7 +1266,7 @@ namespace netgen
 
 
 
-  int OCCGenerateMesh (OCCGeometry & geom, Mesh *& mesh, MeshingParameters & mparam,
+  int DLL_HEADER OCCGenerateMesh (OCCGeometry & geom, Mesh *& mesh, MeshingParameters & mparam,
 		       int perfstepsstart, int perfstepsend)
    {
       multithread.percent = 0;

@@ -48,16 +48,6 @@ namespace netgen
     vert2surfelement = 0;
     vert2segment = 0;
     timestamp = -1;
-
-    edge2vert.SetName ("edge2vert");
-    face2vert.SetName ("face2vert");
-    edges.SetName ("el2edge");
-    faces.SetName ("el2face");
-    surfedges.SetName ("surfel2edge");
-    segedges.SetName ("segment2edge");
-    surffaces.SetName ("surfel2face");
-    surf2volelement.SetName ("surfel2el");
-    face2surfel.SetName ("face2surfel");
   }
 
   MeshTopology :: ~MeshTopology ()
@@ -163,22 +153,11 @@ namespace netgen
     if (buildedges)
       {
 	static int timer1 = NgProfiler::CreateTimer ("topology::buildedges");
-	static int t1a = NgProfiler::CreateTimer ("topology - edges 1");
-	static int t1b = NgProfiler::CreateTimer ("topology - edges 2");
-	static int t1b1 = NgProfiler::CreateTimer ("topology - edges 21");
-	static int t1b11 = NgProfiler::CreateTimer ("topology - edges 211");
-	static int t1b2 = NgProfiler::CreateTimer ("topology - edges 22");
-	static int t1b3 = NgProfiler::CreateTimer ("topology - edges 23");
-	static int t1c = NgProfiler::CreateTimer ("topology - edges 3");
-
-
 	NgProfiler::RegionTimer reg1 (timer1);
 	
 	if (id == 0)
 	  PrintMessage (5, "Update edges ");
       
-	NgProfiler::StartTimer (t1a);
-
 	edges.SetSize(ne);
 	surfedges.SetSize(nse); 
 	segedges.SetSize(nseg);
@@ -220,9 +199,6 @@ namespace netgen
 
 	ned = edge2vert.Size();
 
-	NgProfiler::StopTimer (t1a);
-	NgProfiler::StartTimer (t1b);
-
 	for (int i = PointIndex::BASE; i < nv+PointIndex::BASE; i++)
 	  {
 	    vertex2.SetSize (0);
@@ -245,8 +221,6 @@ namespace netgen
 		  }
 	      }
 
-	    NgProfiler::StartTimer (t1b1);
-
 	    FlatArray<ElementIndex> v2els = (*vert2element)[i];
 	    for (int j = 0; j < v2els.Size(); j++)
 	      {
@@ -266,8 +240,6 @@ namespace netgen
 		      }
 		  }
 	      }
-
-	    NgProfiler::StopTimer (t1b1);	    
 
 	    for (int j = 0; j < (*vert2surfelement)[i].Size(); j++)
 	      {
@@ -307,17 +279,12 @@ namespace netgen
 		  }   
 	      }
 
-	    NgProfiler::StartTimer (t1b2);	    
-
 	    QuickSort (vertex2);
 	    for (int j = 0; j < vertex2.Size(); j++)
 	      {
 		edgenr[vertex2[j]] = ++ned;
 		edge2vert.Append (INDEX_2 (i, vertex2[j]));
 	      }
-
-	    NgProfiler::StopTimer (t1b2);	    
-	    NgProfiler::StartTimer (t1b3);	    
 
 
 	    for (int j = 0; j < (*vert2element)[i].Size(); j++)
@@ -382,10 +349,7 @@ namespace netgen
 		if (edgedir) edgenum *= -1;
 		segedges.Elem(elnr) = edgenum;
 	      }
-	    NgProfiler::StopTimer (t1b3);	    
 	  }
-
-	NgProfiler::StopTimer (t1b);
       }
 
 

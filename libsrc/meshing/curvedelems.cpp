@@ -211,17 +211,15 @@ namespace netgen
     RecPol (int amaxorder)
     {
       maxorder = amaxorder;
-      // cout << "maxo = " << maxorder << endl;
-
       a = new double[maxorder+1];
       b = new double[maxorder+1];
       c = new double[maxorder+1];
     }
     ~RecPol ()
     {
-      delete a;
-      delete b;
-      delete c;
+      delete [] a;
+      delete [] b;
+      delete [] c;
     }
     
     template <class S, class T>
@@ -321,7 +319,7 @@ namespace netgen
   }
 
   
-  Array<RecPol*> jacpols2;
+  static Array<RecPol*> jacpols2;
 
 
   // compute face bubbles up to order n, 0 < y, y-x < 1, x+y < 1
@@ -488,6 +486,7 @@ namespace netgen
   {
     for (int i = 0; i < jacpols2.Size(); i++) 
       delete jacpols2[i];
+    jacpols2.SetSize(0);
   }
 
 

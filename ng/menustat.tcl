@@ -136,7 +136,7 @@ loadinifile;
 .ngmenu.file add command -label "Load Mesh..." -accelerator "<l><m>" \
     -command {
 	set types {
-	    {"Mesh file"   {.vol}	} }
+	    {"Mesh file"   {.vol .vol.gz}	} }
 	set file [tk_getOpenFile -filetypes $types -defaultextension ".vol"]
 	if {$file != ""} {
 	    AddRecentMeshFile $file;
@@ -187,9 +187,9 @@ loadmeshinifile;
 .ngmenu.file add command -label "Save Mesh..." -accelerator "<s><m>" \
     -command {
 	set types {
-	    {"Mesh file"   {.vol}	} }
+	    {"Mesh file"   {.vol .vol.gz}	} }
 
-	set file [tk_getSaveFile -filetypes $types -defaultextension ".vol" -initialfile $basefilename -initialdir $dirname ]
+	set file [tk_getSaveFile -filetypes $types -defaultextension ".vol.gz" -initialfile $basefilename -initialdir $dirname ]
 	if {$file != ""} {
 	    Ng_SaveMesh $file }
 	AddRecentMeshFile $file;
@@ -248,6 +248,8 @@ loadmeshinifile;
 	if { $exportfiletype == "Elmer Format"} {
 	    set file [file nativename [tk_chooseDirectory -title "Elmer Mesh Export - Select Directory"]]
         } elseif { $exportfiletype == "OpenFOAM 1.5+ Format"} {
+	    set file [file nativename [tk_chooseDirectory -title "OpenFOAM 1.5+ Mesh Export - Select Case Directory"]]
+        } elseif { $exportfiletype == "OpenFOAM 1.5+ Compressed"} {
 	    set file [file nativename [tk_chooseDirectory -title "OpenFOAM 1.5+ Mesh Export - Select Case Directory"]]
         } else {
 #	    set file [tk_getSaveFile  -filetypes "{ \"$exportfiletype\" {$extension} }" ]
@@ -402,7 +404,17 @@ set videoactive 0
 # .ngmenu.file add separator
 
 .ngmenu.file add command -label "Quit" -accelerator "<q>" \
-    -command { puts "Thank you for using $progname"; Ng_Exit; destroy . }
+    -command { 
+        puts "Thank you for using $progname"; 
+
+        if { [catch { unload libngsolve[info sharedlibextension] ngsolve } result ] } {
+#            puts "cannot unload ngsolve" 
+#            puts "error: $result"
+        } 
+
+        Ng_Exit; 
+        destroy . 
+    }
 # exit
 
 
