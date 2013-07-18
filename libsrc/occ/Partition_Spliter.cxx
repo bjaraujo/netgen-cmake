@@ -1169,11 +1169,8 @@ static void findEqual (const TopTools_ListOfShape& EL1,
           for (; j<=nbj && ok; ++j) {
             if (Extrema.IsMin(j)) {
 	      hasMin = Standard_True;
-#ifdef HAVE_OCC_65
-	      ok = Extrema.SquareDistance(j) <= tol;  // V6.5
-#else
 	      ok = Extrema.Value(j) <= tol;  // V6.3
-#endif
+	      // ok = Extrema.SquareDistance(j) <= tol;  // V6.5
 	    }
           }
         }

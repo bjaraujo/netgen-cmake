@@ -320,7 +320,7 @@ namespace netgen
     { dimension = dim; }
 
     /// sets internal tables
-    DLL_HEADER void CalcSurfacesOfNode ();
+    void CalcSurfacesOfNode ();
 
     /// additional (temporarily) fix points 
     void FixPoints (const BitArray & fixpoints);

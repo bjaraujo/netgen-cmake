@@ -19,12 +19,9 @@
 // in Linux, "PACKAGE_VERSION" is replaced 
 // in the configure/make phases, with the 
 // right version number
-// Philippose - 19/10/2012
-// Not needed for the CMake Build, since it gets 
-// configured in the config.h file
-//#ifdef WIN32
-//#define PACKAGE_VERSION "4.9.14"
-//#endif
+#ifdef WIN32
+#define PACKAGE_VERSION "5.1"
+#endif
 
 
 #ifdef WIN32
