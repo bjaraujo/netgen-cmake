@@ -15,6 +15,7 @@ namespace netgen
     Classes for NETGEN
   */
 
+class Mesh; // added due to compilation errors on some platforms
 
 
   enum ELEMENT_TYPE { 

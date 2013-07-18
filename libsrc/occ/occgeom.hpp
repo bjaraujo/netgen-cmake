@@ -15,8 +15,8 @@
 #include "Geom_Curve.hxx"
 #include "Geom2d_Curve.hxx"
 #include "Geom_Surface.hxx"
-#include "GeomAPI_ProjectPointOnSurf.hxx"
-#include "GeomAPI_ProjectPointOnCurve.hxx"
+// #include "GeomAPI_ProjectPointOnSurf.hxx"
+// #include "GeomAPI_ProjectPointOnCurve.hxx"
 #include "BRepTools.hxx"
 #include "TopExp.hxx"
 #include "BRepBuilderAPI_MakeVertex.hxx"
@@ -42,8 +42,8 @@
 #include "Geom_Curve.hxx"
 #include "Geom2d_Curve.hxx"
 #include "Geom_Surface.hxx"
-#include "GeomAPI_ProjectPointOnSurf.hxx"
-#include "GeomAPI_ProjectPointOnCurve.hxx"
+// #include "GeomAPI_ProjectPointOnSurf.hxx"
+// #include "GeomAPI_ProjectPointOnCurve.hxx"
 #include "TopoDS_Wire.hxx"
 #include "BRepTools_WireExplorer.hxx"
 #include "BRepTools.hxx"
@@ -68,7 +68,7 @@
 #include "IGESToBRep_Reader.hxx"
 #include "Interface_Static.hxx"
 #include "GeomAPI_ExtremaCurveCurve.hxx"
-#include "Standard_ErrorHandler.hxx"
+//#include "Standard_ErrorHandler.hxx"
 #include "Standard_Failure.hxx"
 #include "ShapeUpgrade_ShellSewing.hxx"
 #include "ShapeFix_Shape.hxx"
@@ -80,6 +80,10 @@
 #include "ShapeAnalysis.hxx"
 #include "ShapeBuild_ReShape.hxx"
 
+// -- Optimization: to use cached projector and classifier
+#include <NCollection_DataMap.hxx>
+class Handle_ShapeAnalysis_Surface;
+class BRepTopAdaptor_FClass2d;
 
 // Philippose - 29/01/2009
 // OpenCascade XDE Support
@@ -192,6 +196,9 @@ namespace netgen
    class OCCGeometry : public NetgenGeometry
    {
       Point<3> center;
+      // -- Optimization: to use cached projector and classifier
+      mutable NCollection_DataMap<int,Handle_ShapeAnalysis_Surface> fprjmap;
+      mutable NCollection_DataMap<int,BRepTopAdaptor_FClass2d*> fclsmap;
 
    public:
       TopoDS_Shape shape;
@@ -247,6 +254,8 @@ namespace netgen
      virtual void Save (string filename) const;
 
 
+      ~OCCGeometry();      // -- to free cached projector and classifier
+
       void BuildFMap();
 
       Box<3> GetBoundingBox()
@@ -266,8 +275,13 @@ namespace netgen
       Point<3> Center()
       {  return center;}
 
-      void Project (int surfi, Point<3> & p) const;
+      // void Project (int surfi, Point<3> & p) const; -- optimization
+      bool Project (int surfi, Point<3> & p, double& u, double& v) const;
       bool FastProject (int surfi, Point<3> & ap, double& u, double& v) const;
+
+      // -- Optimization: to use cached projector and classifier
+      void GetFaceTools(int surfi, Handle(ShapeAnalysis_Surface)& proj,
+                        BRepTopAdaptor_FClass2d*& cls) const;
 
       OCCSurface GetSurface (int surfi)
       {

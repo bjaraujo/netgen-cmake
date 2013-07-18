@@ -1435,7 +1435,8 @@ int STLMeshingDummy (STLGeometry* stlgeometry, Mesh*& mesh, MeshingParameters & 
 	  /*
 	  if (!optstring || strlen(optstring) == 0)
 	    {
-	      mparam.optimize2d = "smcm";
+	      //mparam.optimize2d = (char*)"smcm";
+              mparam.optimize2d = (char*)"smcm";
 	    }
 	  else
 	    {
@@ -1453,7 +1454,7 @@ int STLMeshingDummy (STLGeometry* stlgeometry, Mesh*& mesh, MeshingParameters & 
 	      mesh -> LoadLocalMeshSize (mparam.meshsizefilename);	      
 	      mesh -> CalcLocalHFromSurfaceCurvature (mparam.grading, 
 						      stlparam.resthsurfmeshcurvfac);
-	      mparam.optimize2d = "cmsmSm";
+	      mparam.optimize2d = "(char*)cmsmSm";
 	      STLSurfaceOptimization (*stlgeometry, *mesh, mparam);
 #ifdef STAT_STREAM
 	      (*statout) << GetTime() << " & ";
@@ -1560,7 +1561,8 @@ int STLMeshingDummy (STLGeometry* stlgeometry, Mesh*& mesh, MeshingParameters & 
 	  /*
 	  if (!optstring || strlen(optstring) == 0)
 	    {
-	      mparam.optimize3d = "cmdmstm";
+              //mparam.optimize3d = "cmdmstm";
+	      mparam.optimize3d = (char*)"cmdmstm";
 	    }
 	  else
 	    {

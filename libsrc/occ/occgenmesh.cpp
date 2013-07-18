@@ -57,6 +57,8 @@ namespace netgen
 
 
 
+   
+   static // useless out of this file
    double ComputeH (double kappa)
    {
       double hret;
@@ -74,8 +76,7 @@ namespace netgen
    }
 
 
-
-
+   static // useless out of this file
    void RestrictHTriangle (gp_Pnt2d & par0, gp_Pnt2d & par1, gp_Pnt2d & par2,
                            BRepLProp_SLProps * prop, Mesh & mesh, int depth, double h = 0)
    {
@@ -171,8 +172,8 @@ namespace netgen
          if(h < 1e-4*maxside)
             return;
 
-
-         if (h > 30) return;
+         // commented to restrict H on a large sphere for example
+         //if (h > 30) return;
       }
 
       if (h < maxside && depth < 10)
@@ -231,6 +232,7 @@ namespace netgen
 
 
 
+   static // useless out of this file
    void DivideEdge (TopoDS_Edge & edge, Array<MeshPoint> & ps,
                     Array<double> & params, Mesh & mesh)
    {
@@ -250,8 +252,8 @@ namespace netgen
       hvalue[0] = 0;
       pnt = c->Value(s0);
 
-      double olddist = 0;
-      double dist = 0;
+      //double olddist = 0; -- useless variables
+      //double dist = 0;
 
       int tmpVal = (int)(DIVIDEEDGESECTIONS);
 
@@ -259,15 +261,19 @@ namespace netgen
       {
          oldpnt = pnt;
          pnt = c->Value(s0+(i/double(DIVIDEEDGESECTIONS))*(s1-s0));
+         // -- no more than 1 segment per <edge length>/DIVIDEEDGESECTIONS
          hvalue[i] = hvalue[i-1] +
-            1.0/mesh.GetH(Point3d(pnt.X(), pnt.Y(), pnt.Z()))*
-            pnt.Distance(oldpnt);
+         //   1.0/mesh.GetH(Point3d(pnt.X(), pnt.Y(), pnt.Z()))*
+         //   pnt.Distance(oldpnt);
+           min( 1.0,
+                1.0/mesh.GetH(Point3d(pnt.X(), pnt.Y(), pnt.Z()))*
+                pnt.Distance(oldpnt));
 
          //(*testout) << "mesh.GetH(Point3d(pnt.X(), pnt.Y(), pnt.Z())) " << mesh.GetH(Point3d(pnt.X(), pnt.Y(), pnt.Z()))
          //	   <<  " pnt.Distance(oldpnt) " << pnt.Distance(oldpnt) << endl;
 
-         olddist = dist;
-         dist = pnt.Distance(oldpnt);
+         //olddist = dist; -- useless variables
+         //dist = pnt.Distance(oldpnt);
       }
 
       //  nsubedges = int(ceil(hvalue[DIVIDEEDGESECTIONS]));
@@ -282,7 +288,10 @@ namespace netgen
       {
          if (hvalue[i1]/hvalue[DIVIDEEDGESECTIONS]*nsubedges >= i)
          {
-            params[i] = s0+(i1/double(DIVIDEEDGESECTIONS))*(s1-s0);
+            // -- for nsubedges comparable to DIVIDEEDGESECTIONS
+            //params[i] = s0+(i1/double(DIVIDEEDGESECTIONS))*(s1-s0);
+            double d1 = i1 - (hvalue[i1] - i*hvalue[DIVIDEEDGESECTIONS]/nsubedges)/(hvalue[i1]-hvalue[i1-1]);
+            params[i] = s0+(d1/double(DIVIDEEDGESECTIONS))*(s1-s0);
             pnt = c->Value(params[i]);
             ps[i-1] = MeshPoint (Point3d(pnt.X(), pnt.Y(), pnt.Z()));
             i++;
@@ -326,6 +335,7 @@ namespace netgen
       (*testout) << "nedges = " << nedges << endl;
 
       double eps = 1e-6 * geom.GetBoundingBox().Diam();
+      const double eps2 = eps * eps; // -- small optimization
 
       for (int i = 1; i <= nvertices; i++)
       {
@@ -335,7 +345,8 @@ namespace netgen
          bool exists = 0;
          if (merge_solids)
             for (PointIndex pi = 1; pi <= mesh.GetNP(); pi++)
-               if ( Dist2 (mesh[pi], Point<3>(mp)) < eps*eps)
+               //if ( Dist2 (mesh[pi], Point<3>(mp)) < eps*eps)              
+               if ( Dist2 (mesh[pi], Point<3>(mp)) < eps2 ) // -- small optimization
                {
                   exists = 1;
                   break;
@@ -365,6 +376,7 @@ namespace netgen
          {
             TopoDS_Face face = TopoDS::Face(exp1.Current());
             int facenr = geom.fmap.FindIndex(face);
+            if ( facenr < 1 ) continue; // -- to support SALOME sub-meshes
 
             if (face2solid[0][facenr-1] == 0)
                face2solid[0][facenr-1] = solidnr;
@@ -384,6 +396,7 @@ namespace netgen
       int facenr = 0;
       int edgenr = 0;
 
+      edgenr = mesh.GetNSeg(); // to support SALOME sub-meshes
 
       (*testout) << "faces = " << geom.fmap.Extent() << endl;
       int curr = 0;
@@ -445,6 +458,7 @@ namespace netgen
                   //(*testout) << "ignoring degenerated edge" << endl;
                   continue;
                }
+               if ( geom.emap.FindIndex(edge) < 1 ) continue; // to support SALOME sub-meshes
 
                if (geom.vmap.FindIndex(TopExp::FirstVertex (edge)) ==
                   geom.vmap.FindIndex(TopExp::LastVertex (edge)))
@@ -482,15 +496,64 @@ namespace netgen
                }
                else
                {
-                  Point<3> fp = occ2ng (BRep_Tool::Pnt (TopExp::FirstVertex (edge)));
-                  Point<3> lp = occ2ng (BRep_Tool::Pnt (TopExp::LastVertex (edge)));
+                 TopoDS_Iterator vIt( edge, false );
+                 TopoDS_Vertex v1 = TopoDS::Vertex( vIt.Value() ); vIt.Next();
+                 TopoDS_Vertex v2 = TopoDS::Vertex( vIt.Value() );
+                 if ( v1.Orientation() == TopAbs_REVERSED )
+                   std::swap( v1, v2 );
+                 const bool isClosedEdge = v1.IsSame( v2 );
+                 
+                  Point<3> fp = occ2ng (BRep_Tool::Pnt (v1));
+                  Point<3> lp = occ2ng (BRep_Tool::Pnt (v2));
+                  double tol2 = std::min( eps*eps, 1e-6 * Dist2( fp, lp ));
+                  if ( isClosedEdge )
+                    tol2 = BRep_Tool::Tolerance( v1 ) * BRep_Tool::Tolerance( v1 );
 
                   pnums[0] = -1;
                   pnums.Last() = -1;
                   for (PointIndex pi = 1; pi < first_ep; pi++)
                   {
-                     if (Dist2 (mesh[pi], fp) < eps*eps) pnums[0] = pi;
-                     if (Dist2 (mesh[pi], lp) < eps*eps) pnums.Last() = pi;
+                    if (Dist2 (mesh[pi], fp) < tol2) pnums[0] = pi;
+                    if (Dist2 (mesh[pi], lp) < tol2) pnums.Last() = pi;
+                  }
+                  if (( isClosedEdge && pnums[0] != pnums.Last() ) ||
+                      ( !isClosedEdge && pnums[0] == pnums.Last() ))
+                    pnums[0] = pnums.Last() = -1;
+                  if ( pnums[0] == -1 || pnums.Last() == -1 )
+                  {
+                    // take into account a possible large gap between a vertex and an edge curve
+                    // end and a large vertex tolerance covering the whole edge
+                    if ( pnums[0] == -1 )
+                    {
+                      double tol = BRep_Tool::Tolerance( v1 );
+                      for (PointIndex pi = 1; pi < first_ep; pi++)
+                        if (pi != pnums.Last() && Dist2 (mesh[pi], fp) < 2*tol*tol)
+                          pnums[0] = pi;
+
+                      if ( pnums[0] == -1 )
+                        pnums[0] = first_ep-1- nvertices + geom.vmap.FindIndex ( v1 );
+                    }
+                    if ( isClosedEdge )
+                    {
+                      pnums.Last() = pnums[0];
+                    }
+                    else
+                    {
+                      if ( pnums.Last() == -1 )
+                      {
+                        double tol = BRep_Tool::Tolerance( v2 );
+                        for (PointIndex pi = 1; pi < first_ep; pi++)
+                          if (pi != pnums[0] && Dist2 (mesh[pi], lp) < 2*tol*tol)
+                            pnums.Last() = pi;
+
+                        if ( pnums.Last() == -1 )
+                          pnums.Last() = first_ep-1-nvertices + geom.vmap.FindIndex ( v2 );
+                      }
+
+                      if ( Dist2( fp, mesh[PointIndex(pnums[0])]) >
+                           Dist2( lp, mesh[PointIndex(pnums.Last())]))
+                      std::swap( pnums[0], pnums.Last() );
+                    }
                   }
                }
 
@@ -1458,3 +1521,4 @@ namespace netgen
 }
 
 #endif
+
