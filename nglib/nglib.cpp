@@ -20,6 +20,7 @@
 
 #ifdef OCCGEOMETRY
 #include <occgeom.hpp>
+#include "thirdlinks.h"
 #endif
 
 #include <nginterface.h>

@@ -4,7 +4,6 @@
 #include <occgeom.hpp>
 #include <meshing.hpp>
 
-
 namespace netgen
 {
 
@@ -505,7 +504,7 @@ namespace netgen
                  
                   Point<3> fp = occ2ng (BRep_Tool::Pnt (v1));
                   Point<3> lp = occ2ng (BRep_Tool::Pnt (v2));
-                  double tol2 = std::min( eps*eps, 1e-6 * Dist2( fp, lp ));
+                  double tol2 = min( eps*eps, 1e-6 * Dist2( fp, lp ));
                   if ( isClosedEdge )
                     tol2 = BRep_Tool::Tolerance( v1 ) * BRep_Tool::Tolerance( v1 );
 

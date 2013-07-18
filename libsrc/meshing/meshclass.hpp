@@ -21,7 +21,7 @@ namespace netgen
 
 
   /// 2d/3d mesh
-  class Mesh
+  class  Mesh
   {
   public:
     typedef ::netgen::T_POINTS T_POINTS;

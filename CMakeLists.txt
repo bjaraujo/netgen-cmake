@@ -77,7 +77,7 @@ MESSAGE(STATUS "Build type: ${BIT_WIDTH}bit")
 #####################################################
 OPTION_WITH_DEFAULT(${PROJECT_NAME}_BUILD_GUI "Build the Graphical User Interface for Netgen" ON)
 OPTION_WITH_DEFAULT(${PROJECT_NAME}_BUILD_NGLIB_API "Build independent Netgen Library - nglib" ON)
-OPTION_WITH_DEFAULT(${PROJECT_NAME}_ENABLE_OPENCASCADE_SUPPORT "Build with OpenCascade support (for STEP, IGES support)" OFF)
+OPTION_WITH_DEFAULT(${PROJECT_NAME}_ENABLE_OPENCASCADE_SUPPORT "Build with OpenCascade support (for STEP, IGES support)" ON)
 OPTION_WITH_DEFAULT(${PROJECT_NAME}_ENABLE_STL_SUPPORT "Build with STL support (for STL, STLB support)" ON)
 OPTION_WITH_DEFAULT(${PROJECT_NAME}_ENABLE_PARALLEL_SUPPORT "Build with MPI Parallelization support" OFF)
 OPTION_WITH_DEFAULT(${PROJECT_NAME}_USE_JPEGLIB "Use external JPEG Library to create snapshots" OFF)
@@ -340,6 +340,10 @@ IF(${PROJECT_NAME}_ENABLE_OPENCASCADE_SUPPORT)
 	ELSE(OpenCASCADE_FOUND)
 		MESSAGE(FATAL_ERROR "OpenCASCADE Development System not found....!")
 	ENDIF(OpenCASCADE_FOUND)
+
+	link_directories(${OpenCASCADE_LINK_DIRECTORY})
+	link_directories(${ZLIB_LIBRARY})
+	link_directories(${THREADS_PTHREADS_WIN32_LIBRARY})
 ENDIF(${PROJECT_NAME}_ENABLE_OPENCASCADE_SUPPORT)	
 
 

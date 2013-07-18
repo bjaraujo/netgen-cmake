@@ -10,10 +10,10 @@
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Ext Header Files">
-      <UniqueIdentifier>{1a9ce54a-635e-4365-be44-40e34f9e5bd4}</UniqueIdentifier>
+      <UniqueIdentifier>{f507ea70-6132-4c73-a84a-b80053cd50df}</UniqueIdentifier>
     </Filter>
     <Filter Include="Ext Source Files">
-      <UniqueIdentifier>{00ee3c55-37ea-4e80-a8dd-765f106d1af3}</UniqueIdentifier>
+      <UniqueIdentifier>{2b75c1a3-bb48-43d8-af9b-c46c61d107e8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
