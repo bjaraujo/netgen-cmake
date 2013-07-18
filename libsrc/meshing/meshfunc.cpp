@@ -130,7 +130,8 @@ namespace netgen
 		mpquad.check_impossible = qstep == 1;   // for prisms only (air domain in trafo)
 		
 		
-		for (PointIndex pi = mesh3d.Points().Begin(); pi < mesh3d.Points().End(); pi++)
+		for (PointIndex pi = PointIndex::BASE; 
+		     pi < mesh3d.GetNP()+PointIndex::BASE; pi++)
 		  meshing.AddPoint (mesh3d[pi], pi);
 		
 		mesh3d.GetIdentifications().GetPairs (0, connectednodes);
@@ -173,8 +174,10 @@ namespace netgen
            mesh3d.FindOpenElements(k);
 
 
-           for (PointIndex pi = mesh3d.Points().Begin(); pi < mesh3d.Points().End(); pi++)
+           for (PointIndex pi = PointIndex::BASE; 
+              pi < mesh3d.GetNP()+PointIndex::BASE; pi++)
               meshing.AddPoint (mesh3d[pi], pi);
+
 
            for (int i = 1; i <= mesh3d.GetNOpenElements(); i++)
               meshing.AddBoundaryElement (mesh3d.OpenElement(i));
@@ -214,8 +217,10 @@ namespace netgen
               Array<int, PointIndex::BASE> glob2loc(mesh3d.GetNP());
               glob2loc = -1;
 
-              for (PointIndex pi = mesh3d.Points().Begin(); pi < mesh3d.Points().End(); pi++)
-                if (domain_bbox.IsIn (mesh3d[pi]))
+              for (PointIndex pi = PointIndex::BASE; 
+                 pi < mesh3d.GetNP()+PointIndex::BASE; pi++)
+
+                 if (domain_bbox.IsIn (mesh3d[pi]))
                     glob2loc[pi] = 
                     meshing.AddPoint (mesh3d[pi], pi);
 

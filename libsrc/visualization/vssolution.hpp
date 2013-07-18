@@ -43,7 +43,6 @@ class VisualSceneSolution : public VisualScene
 
   int surfellist;
   int linelist;
-  int element1dlist;
   int clipplanelist_scal;
   int clipplanelist_vec;
   int isolinelist;
@@ -191,13 +190,8 @@ public:
 
   void SaveSolutionData (const char * filename);
 
-  /*
   static void RealVec3d (const double * values, Vec3d & v, 
 			 bool iscomplex, bool imag);
-  */
-  static Vec<3> RealVec3d (const double * values, 
-			   bool iscomplex, bool imag);
-
   static void RealVec3d (const double * values, Vec3d & v, 
 			 bool iscomplex, double phaser, double phasei);
 
@@ -286,8 +280,6 @@ public:
   /// draw elements (build lists)
   void DrawSurfaceElements ();
   void DrawSurfaceElementLines ();
-  void Draw1DElements();
-
   void DrawSurfaceVectors ();
   void DrawTrigSurfaceVectors(const Array< Point<3> > & lp, const Point<3> & pmin, const Point<3> & pmax,
 			      const int sei, const SolData * vsol);

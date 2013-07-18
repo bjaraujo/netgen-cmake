@@ -1,4 +1,4 @@
-AC_INIT([netgen],[5.1],[],[])
+AC_INIT([netgen],[5.0.0],[],[])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -15,11 +15,6 @@ AC_DISABLE_STATIC
 
 AC_LANG([C++])
 AC_PROG_CXX
-
-AC_OPENMP
-CXXFLAGS="$CXXFLAGS $OPENMP_CXXFLAGS"
-# LDFLAGS="$LDFLAGS $OPENMP_CXXFLAGS"
-
 AC_PROG_LIBTOOL
 LT_INIT
 
@@ -138,11 +133,7 @@ AC_ARG_ENABLE([ffmpeg],
         )               
 
 
-mklon=false
-AC_ARG_ENABLE([mkl],
-        [AS_HELP_STRING([--enable-mkl],[link Intel's mkl library, necessary for ngsolve and mkl 11.x])],
-        [if test "$enableval" = yes; then mklon=true; else mklon=false; fi]
-        )
+
 
 # only for GUI version 
 
@@ -154,7 +145,6 @@ TEA_LOAD_TCLCONFIG
 TEA_PATH_TKCONFIG
 TEA_LOAD_TKCONFIG
 TEA_PUBLIC_TCL_HEADERS
-TEA_PUBLIC_TK_HEADERS
 
 AC_SUBST([TOGLLIBDIR], ["$togllibfl"])
 AC_CHECK_HEADER([togl.h])
@@ -200,7 +190,6 @@ fi
 
 AM_CONDITIONAL([NGLIB], [test x$nglibon = xtrue])
 AM_CONDITIONAL([NGGUI], [test x$ngguion = xtrue])
-AM_CONDITIONAL([NGMKL], [test x$mklon = xtrue])
 
 AC_CHECK_HEADER(pthread.h)
 

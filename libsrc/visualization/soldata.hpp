@@ -92,9 +92,6 @@ namespace netgen
       return res;
     }
 
-    virtual bool GetSegmentValue (int segnr, double xref, double * values)
-    { return false; }
-    
 
     virtual int GetNumMultiDimComponents ()
     {

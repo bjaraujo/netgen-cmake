@@ -181,7 +181,6 @@ OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OCCFLAGS = @OCCFLAGS@
 OCCLIBS = @OCCLIBS@
-OPENMP_CXXFLAGS = @OPENMP_CXXFLAGS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -223,7 +222,6 @@ TCL_STUB_LIB_FLAG = @TCL_STUB_LIB_FLAG@
 TCL_STUB_LIB_SPEC = @TCL_STUB_LIB_SPEC@
 TCL_VERSION = @TCL_VERSION@
 TK_BIN_DIR = @TK_BIN_DIR@
-TK_INCLUDES = @TK_INCLUDES@
 TK_LIBS = @TK_LIBS@
 TK_LIB_FILE = @TK_LIB_FILE@
 TK_LIB_FLAG = @TK_LIB_FLAG@
@@ -317,9 +315,8 @@ libmesh_la_SOURCES = adfront2.cpp adfront3.cpp bisect.cpp boundarylayer.cpp \
 	parallelmesh.cpp  paralleltop.cpp  paralleltop.hpp basegeom.cpp 
 
 libmesh_la_LIBADD = $(top_builddir)/libsrc/linalg/libla.la \
-	$(top_builddir)/libsrc/gprim/libgprim.la \
-	$(top_builddir)/libsrc/general/libgen.la \
-	-lz
+	 $(top_builddir)/libsrc/gprim/libgprim.la \
+	 $(top_builddir)/libsrc/general/libgen.la 
 
 all: all-am
 

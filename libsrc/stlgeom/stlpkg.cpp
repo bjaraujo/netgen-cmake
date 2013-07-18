@@ -19,7 +19,7 @@ extern "C" int Ng_STL_Init (Tcl_Interp * interp);
 
 namespace netgen
 {
-  extern AutoPtr<NetgenGeometry>  ng_geometry;
+  extern NetgenGeometry * ng_geometry;
   extern AutoPtr<Mesh> mesh;
 
   static VisualSceneSTLGeometry vsstlgeom;
@@ -31,10 +31,10 @@ namespace netgen
 
 
 
-  class STLGeometryVisRegister : public GeometryRegister
+  class STLGeometryRegister : public GeometryRegister
   {
   public:
-    virtual NetgenGeometry * Load (string filename) const { return NULL; }
+    virtual NetgenGeometry * Load (string filename) const;
     virtual VisualScene * GetVisualScene (const NetgenGeometry * geom) const;
     virtual void SetParameters (Tcl_Interp * interp) 
     {
@@ -103,7 +103,7 @@ namespace netgen
 			    Tcl_Interp * interp,
 			    int argc, tcl_const char *argv[])
   {
-    STLGeometryVisRegister reg;
+    STLGeometryRegister reg;
     reg.SetParameters (interp);
 
     return TCL_OK;
@@ -122,7 +122,7 @@ namespace netgen
   {
     //cout << "STL doctor" << endl;
     STLGeometry * stlgeometry = 
-          dynamic_cast<STLGeometry*> (ng_geometry.Ptr());
+      dynamic_cast<STLGeometry*> (ng_geometry);
       
 
     stldoctor.drawmeshededges =
@@ -406,6 +406,48 @@ namespace netgen
 
 
 
+  NetgenGeometry *  STLGeometryRegister :: Load (string filename) const
+  {
+    const char * cfilename = filename.c_str();
+
+    if (strcmp (&cfilename[strlen(cfilename)-3], "stl") == 0)
+      {
+	PrintMessage (1, "Load STL geometry file ", cfilename);
+
+	ifstream infile(cfilename);
+
+	STLGeometry * hgeom = STLGeometry :: Load (infile);
+	hgeom -> edgesfound = 0;
+	return hgeom;
+      }
+    else if (strcmp (&cfilename[strlen(cfilename)-4], "stlb") == 0)
+      {
+	PrintMessage (1, "Load STL binary geometry file ", cfilename);
+
+	ifstream infile(cfilename);
+
+	STLGeometry * hgeom = STLGeometry :: LoadBinary (infile);
+	hgeom -> edgesfound = 0;
+	return hgeom;
+      }
+    else if (strcmp (&cfilename[strlen(cfilename)-3], "nao") == 0)
+      {
+	PrintMessage (1, "Load naomi (F. Kickinger) geometry file ", cfilename);
+
+	ifstream infile(cfilename);
+
+	STLGeometry * hgeom = STLGeometry :: LoadNaomi (infile);
+	hgeom -> edgesfound = 0;
+	return hgeom;
+      }
+
+    
+    return NULL;
+  }
+
+
+
+
 
 
 
@@ -418,7 +460,7 @@ namespace netgen
     double data[10];
     static char buf[20];
 
-    STLGeometry * stlgeometry = dynamic_cast<STLGeometry*> (ng_geometry.Ptr());
+    STLGeometry * stlgeometry = dynamic_cast<STLGeometry*> (ng_geometry);
 
     if (!stlgeometry)
       {
@@ -520,7 +562,7 @@ namespace netgen
 
     Ng_SetMeshingParameters (clientData, interp, argc, argv);
 
-    STLGeometry * stlgeometry = dynamic_cast<STLGeometry*> (ng_geometry.Ptr());
+    STLGeometry * stlgeometry = dynamic_cast<STLGeometry*> (ng_geometry);
     if (mesh.Ptr() && stlgeometry)
       {
 	mesh -> SetLocalH (stlgeometry->GetBoundingBox().PMin() - Vec3d(10, 10, 10),
@@ -539,12 +581,12 @@ namespace netgen
 
 
 
-  VisualScene * STLGeometryVisRegister :: GetVisualScene (const NetgenGeometry * geom) const
+  VisualScene * STLGeometryRegister :: GetVisualScene (const NetgenGeometry * geom) const
   {
-    const STLGeometry * geometry = dynamic_cast<const STLGeometry*> (geom);
+    STLGeometry * geometry = dynamic_cast<STLGeometry*> (ng_geometry);
     if (geometry)
       {
-	vsstlmeshing.SetGeometry (const_cast<STLGeometry*> (geometry));
+	vsstlmeshing.SetGeometry (geometry);
 	return &vsstlmeshing;
       }
     return NULL;
@@ -557,7 +599,7 @@ using namespace netgen;
 extern "C" int Ng_stl_Init (Tcl_Interp * interp);
 int Ng_stl_Init (Tcl_Interp * interp)
 {
-  geometryregister.Append (new STLGeometryVisRegister);
+  geometryregister.Append (new STLGeometryRegister);
 
   Tcl_CreateCommand (interp, "Ng_SetSTLParameters", Ng_SetSTLParameters,
 		     (ClientData)NULL,

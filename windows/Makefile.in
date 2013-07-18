@@ -112,7 +112,6 @@ OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OCCFLAGS = @OCCFLAGS@
 OCCLIBS = @OCCLIBS@
-OPENMP_CXXFLAGS = @OPENMP_CXXFLAGS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -154,7 +153,6 @@ TCL_STUB_LIB_FLAG = @TCL_STUB_LIB_FLAG@
 TCL_STUB_LIB_SPEC = @TCL_STUB_LIB_SPEC@
 TCL_VERSION = @TCL_VERSION@
 TK_BIN_DIR = @TK_BIN_DIR@
-TK_INCLUDES = @TK_INCLUDES@
 TK_LIBS = @TK_LIBS@
 TK_LIB_FILE = @TK_LIB_FILE@
 TK_LIB_FLAG = @TK_LIB_FLAG@
@@ -221,7 +219,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-dist_noinst_DATA = netgen.sln netgen.vcproj \
+dist_noinst_DATA = netgen-5.0.sln netgen-5.0.vcproj \
 postBuild_netgen.bat nglib.sln nglib.vcproj \
 postBuild_nglib.bat netgen.ico netgen.rc resource.h
 

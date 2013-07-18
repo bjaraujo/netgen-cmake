@@ -42,18 +42,7 @@ namespace netgen
     virtual void SetParameters (Tcl_Interp * /* interp */) { ; }
   };
 
-  class DLL_HEADER GeometryRegisterArray : public Array<GeometryRegister*>
-  {
-  public:
-    virtual ~GeometryRegisterArray()
-    {
-      for (int i = 0; i < Size(); i++)
-        delete (*this)[i];
-    }
-  };
-
-  // extern DLL_HEADER Array<GeometryRegister*> geometryregister; 
-  extern DLL_HEADER GeometryRegisterArray geometryregister; 
+  extern DLL_HEADER Array<GeometryRegister*> geometryregister; 
 }
 
 

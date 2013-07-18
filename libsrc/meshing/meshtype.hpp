@@ -120,16 +120,11 @@ namespace netgen
     PointIndex () { ; }
     PointIndex (int ai) : i(ai) { ; }
     PointIndex & operator= (const PointIndex &ai) { i = ai.i; return *this; }
-    // PointIndex & operator= (int ai) { i = ai; return *this; }
+    PointIndex & operator= (int ai) { i = ai; return *this; }
     operator int () const { return i; }
-    // int GetInt () const { return i; }
-    // PointIndex operator+ (int i2) { return PointIndex (i+i2); }
-    // PointIndex operator++ (int) { int hi = i; i++; return PointIndex(hi); }
-    // PointIndex operator-- (int) { int hi = i; i--; return PointIndex(hi); }
-    PointIndex operator++ (int) { PointIndex hi(*this); i++; return hi; }
-    PointIndex operator-- (int) { PointIndex hi(*this); i--; return hi; }
-    PointIndex operator++ () { i++; return *this; }
-    PointIndex operator-- () { i--; return *this; }
+    int GetInt () const { return i; }
+    PointIndex operator++ (int) { int hi = i; i++; return PointIndex(hi); }
+    PointIndex operator-- (int) { int hi = i; i--; return PointIndex(hi); }
 
 #ifdef BASE0
     enum { BASE = 0 };
@@ -145,7 +140,7 @@ namespace netgen
 
   inline ostream & operator<< (ostream & ost, const PointIndex & pi)
   {
-    return (ost << int(pi));
+    return (ost << pi.GetInt());
   }
 
 
@@ -280,7 +275,7 @@ namespace netgen
 
 
 
-  typedef Array<MeshPoint, PointIndex::BASE, PointIndex> T_POINTS;
+  typedef Array<MeshPoint, PointIndex::BASE> T_POINTS;
 
 
 
@@ -376,9 +371,6 @@ namespace netgen
     ///
     const PointIndex & operator[] (int i) const { return pnum[i]; }
 
-    FlatArray<const PointIndex> PNums () const 
-    { return FlatArray<const PointIndex> (np, &pnum[0]); }
-    
     ///
     PointIndex & PNum (int i) { return pnum[i-1]; }
     ///
@@ -625,9 +617,6 @@ namespace netgen
     PointIndex & operator[] (int i) { return pnum[i]; }
     ///
     const PointIndex & operator[] (int i) const { return pnum[i]; }
-
-    FlatArray<const PointIndex> PNums () const 
-    { return FlatArray<const PointIndex> (np, &pnum[0]); }
 
     ///
     PointIndex & PNum (int i) { return pnum[i-1]; }

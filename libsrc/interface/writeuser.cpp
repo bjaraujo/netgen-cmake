@@ -37,7 +37,6 @@ namespace netgen
       "Gmsh Format", ".gmsh",
       "Gmsh2 Format", ".gmsh2",
       "OpenFOAM 1.5+ Format", "*",
-	  "OpenFOAM 1.5+ Compressed", "*",
       "JCMwave Format", ".jcm",
       "TET Format", ".tet",
       //      { "Chemnitz Format" },
@@ -127,10 +126,7 @@ bool WriteUserFormat (const string & format,
   // Philippose - 25/10/2009
   // Added OpenFOAM 1.5+ Mesh export capability
   else if (format == "OpenFOAM 1.5+ Format")
-    WriteOpenFOAM15xFormat (mesh, filename, false);
-
-  else if (format == "OpenFOAM 1.5+ Compressed")
-    WriteOpenFOAM15xFormat (mesh, filename, true);
+    WriteOpenFOAM15xFormat (mesh, filename);
 
   else if (format == "JCMwave Format")
     WriteJCMFormat (mesh, geom, filename);
@@ -308,22 +304,17 @@ void WriteSTLFormat (const Mesh & mesh,
 {
   cout << "\nWrite STL Surface Mesh" << endl;
 
-  ostream *outfile;
-
-  if(filename.substr(filename.length()-3,3) == ".gz")
-	  outfile = new ogzstream(filename.c_str());
-  else
-	  outfile = new ofstream(filename.c_str());
+  ofstream outfile (filename.c_str());
 
   int i;
 
-  outfile->precision(10);
+  outfile.precision(10);
 
-  *outfile << "solid" << endl;
+  outfile << "solid" << endl;
 
   for (i = 1; i <= mesh.GetNSE(); i++)
     {
-      *outfile << "facet normal ";
+      outfile << "facet normal ";
       const Point3d& p1 = mesh.Point(mesh.SurfaceElement(i).PNum(1));
       const Point3d& p2 = mesh.Point(mesh.SurfaceElement(i).PNum(2));
       const Point3d& p3 = mesh.Point(mesh.SurfaceElement(i).PNum(3));
@@ -334,17 +325,17 @@ void WriteSTLFormat (const Mesh & mesh,
 	  normal /= (normal.Length());
 	}
 
-      *outfile << normal.X() << " " << normal.Y() << " " << normal.Z() << "\n";
-      *outfile << "outer loop\n";
+      outfile << normal.X() << " " << normal.Y() << " " << normal.Z() << "\n";
+      outfile << "outer loop\n";
 
-      *outfile << "vertex " << p1.X() << " " << p1.Y() << " " << p1.Z() << "\n";
-      *outfile << "vertex " << p2.X() << " " << p2.Y() << " " << p2.Z() << "\n";
-      *outfile << "vertex " << p3.X() << " " << p3.Y() << " " << p3.Z() << "\n";
+      outfile << "vertex " << p1.X() << " " << p1.Y() << " " << p1.Z() << "\n";
+      outfile << "vertex " << p2.X() << " " << p2.Y() << " " << p2.Z() << "\n";
+      outfile << "vertex " << p3.X() << " " << p3.Y() << " " << p3.Z() << "\n";
 
-      *outfile << "endloop\n";
-      *outfile << "endfacet\n";
+      outfile << "endloop\n";
+      outfile << "endfacet\n";
     }
-  *outfile << "endsolid" << endl;
+  outfile << "endsolid" << endl;
 }
 
 
@@ -365,14 +356,9 @@ void WriteSTLExtFormat (const Mesh & mesh,
 {
   cout << "\nWrite STL Surface Mesh (with separated boundary faces)" << endl;
 
-  ostream *outfile;
+  ofstream outfile (filename.c_str());
 
-  if(filename.substr(filename.length()-3,3) == ".gz")
-	  outfile = new ogzstream(filename.c_str());
-  else
-	  outfile = new ofstream(filename.c_str());
-
-  outfile->precision(10);
+  outfile.precision(10);
 
   int numBCs = 0;
 
@@ -407,7 +393,7 @@ void WriteSTLExtFormat (const Mesh & mesh,
   // Now actually write the data to file
   for(int bcInd = 1; bcInd <= faceBCs.Size(); bcInd++)
   {
-      *outfile << "solid Boundary_" << faceBCs.Elem(bcInd) << "\n";
+      outfile << "solid Boundary_" << faceBCs.Elem(bcInd) << "\n";
 
       for(int faceNr = 1;faceNr <= faceBCMapping.EntrySize(bcInd); faceNr++)
       {
@@ -416,7 +402,7 @@ void WriteSTLExtFormat (const Mesh & mesh,
 
           for (int i = 0; i < faceSei.Size(); i++)
           {
-        	  *outfile << "facet normal ";
+        	  outfile << "facet normal ";
         	  const Point3d& p1 = mesh.Point(mesh.SurfaceElement(faceSei[i]).PNum(1));
         	  const Point3d& p2 = mesh.Point(mesh.SurfaceElement(faceSei[i]).PNum(2));
         	  const Point3d& p3 = mesh.Point(mesh.SurfaceElement(faceSei[i]).PNum(3));
@@ -427,18 +413,18 @@ void WriteSTLExtFormat (const Mesh & mesh,
         		  normal /= (normal.Length());
         	  }
 
-        	  *outfile << normal.X() << " " << normal.Y() << " " << normal.Z() << "\n";
-        	  *outfile << "outer loop\n";
+        	  outfile << normal.X() << " " << normal.Y() << " " << normal.Z() << "\n";
+        	  outfile << "outer loop\n";
 
-        	  *outfile << "vertex " << p1.X() << " " << p1.Y() << " " << p1.Z() << "\n";
-        	  *outfile << "vertex " << p2.X() << " " << p2.Y() << " " << p2.Z() << "\n";
-        	  *outfile << "vertex " << p3.X() << " " << p3.Y() << " " << p3.Z() << "\n";
+        	  outfile << "vertex " << p1.X() << " " << p1.Y() << " " << p1.Z() << "\n";
+        	  outfile << "vertex " << p2.X() << " " << p2.Y() << " " << p2.Z() << "\n";
+        	  outfile << "vertex " << p3.X() << " " << p3.Y() << " " << p3.Z() << "\n";
 
-        	  *outfile << "endloop\n";
-        	  *outfile << "endfacet\n";
+        	  outfile << "endloop\n";
+        	  outfile << "endfacet\n";
           }
       }
-      *outfile << "endsolid Boundary_" << faceBCs.Elem(bcInd) << "\n";
+      outfile << "endsolid Boundary_" << faceBCs.Elem(bcInd) << "\n";
   }
 }
 

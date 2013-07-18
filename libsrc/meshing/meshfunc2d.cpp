@@ -6,15 +6,18 @@ namespace netgen
 
   DLL_HEADER void Optimize2d (Mesh & mesh, MeshingParameters & mp)
   {
-    static int timer = NgProfiler::CreateTimer ("optimize2d");
-    NgProfiler::RegionTimer reg(timer);
+    int i;
 
+    //double h = mp.maxh;
+  
     mesh.CalcSurfacesOfNode();
 
     const char * optstr = mp.optimize2d;
     int optsteps = mp.optsteps2d;
 
-    for (int i = 1; i <= optsteps; i++)
+    //  cout << "optstr = " << optstr << endl;
+
+    for (i = 1; i <= optsteps; i++)
       for (size_t j = 1; j <= strlen(optstr); j++)
 	{
 	  if (multithread.terminate) break;

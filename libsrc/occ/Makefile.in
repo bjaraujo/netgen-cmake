@@ -35,7 +35,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@NGGUI_TRUE@am__append_1 = liboccvis.la 
 subdir = libsrc/occ
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -89,7 +88,6 @@ libocc_la_OBJECTS = $(am_libocc_la_OBJECTS)
 liboccvis_la_DEPENDENCIES = libocc.la
 am_liboccvis_la_OBJECTS = occpkg.lo vsocc.lo
 liboccvis_la_OBJECTS = $(am_liboccvis_la_OBJECTS)
-@NGGUI_TRUE@am_liboccvis_la_rpath = -rpath $(libdir)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -169,7 +167,6 @@ OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OCCFLAGS = @OCCFLAGS@
 OCCLIBS = @OCCLIBS@
-OPENMP_CXXFLAGS = @OPENMP_CXXFLAGS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -211,7 +208,6 @@ TCL_STUB_LIB_FLAG = @TCL_STUB_LIB_FLAG@
 TCL_STUB_LIB_SPEC = @TCL_STUB_LIB_SPEC@
 TCL_VERSION = @TCL_VERSION@
 TK_BIN_DIR = @TK_BIN_DIR@
-TK_INCLUDES = @TK_INCLUDES@
 TK_LIBS = @TK_LIBS@
 TK_LIB_FILE = @TK_LIB_FILE@
 TK_LIB_FLAG = @TK_LIB_FLAG@
@@ -291,7 +287,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/libsrc/include  $(OCCFLAGS) $(TCL_INCLUDES)
 
 # $(OCC_INC_FLAG)
 METASOURCES = AUTO
-lib_LTLIBRARIES = libocc.la $(am__append_1)
+lib_LTLIBRARIES = libocc.la liboccvis.la
 libocc_la_SOURCES = Partition_Inter2d.cxx Partition_Inter3d.cxx \
 	Partition_Loop.cxx Partition_Loop2d.cxx Partition_Loop3d.cxx Partition_Spliter.cxx \
 	occconstruction.cpp occgenmesh.cpp occgeom.cpp occmeshsurf.cpp
@@ -367,7 +363,7 @@ clean-libLTLIBRARIES:
 libocc.la: $(libocc_la_OBJECTS) $(libocc_la_DEPENDENCIES) $(EXTRA_libocc_la_DEPENDENCIES) 
 	$(CXXLINK) -rpath $(libdir) $(libocc_la_OBJECTS) $(libocc_la_LIBADD) $(LIBS)
 liboccvis.la: $(liboccvis_la_OBJECTS) $(liboccvis_la_DEPENDENCIES) $(EXTRA_liboccvis_la_DEPENDENCIES) 
-	$(CXXLINK) $(am_liboccvis_la_rpath) $(liboccvis_la_OBJECTS) $(liboccvis_la_LIBADD) $(LIBS)
+	$(CXXLINK) -rpath $(libdir) $(liboccvis_la_OBJECTS) $(liboccvis_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

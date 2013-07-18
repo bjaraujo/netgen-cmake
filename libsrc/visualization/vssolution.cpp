@@ -37,7 +37,6 @@ namespace netgen
   {
     surfellist = 0;
     linelist = 0;
-    element1dlist = 0;
     clipplanelist_scal = 0;
     clipplanelist_vec = 0;
     isolinelist = 0;
@@ -71,6 +70,7 @@ namespace netgen
   void VisualSceneSolution :: AddSolutionData (SolData * sd)
   {
     NgLock meshlock1 (mesh->MajorMutex(), 1);
+
     int funcnr = -1;
     for (int i = 0; i < soldata.Size(); i++)
       {
@@ -89,7 +89,7 @@ namespace netgen
         funcnr = soldata.Size()-1;
       }
     
-    SolData * nsd = soldata[funcnr]; 
+    SolData * nsd = soldata[funcnr];
 
     nsd->size = 0;
     if (mesh)
@@ -353,10 +353,9 @@ namespace netgen
 
     BuildScene();
 
-    CreateTexture (numtexturecols, lineartexture, 0.5, GL_MODULATE);
+    CreateTexture (numtexturecols, lineartexture, GL_MODULATE);
 
     glClearColor(backcolor, backcolor, backcolor, 1);
-    // glClearColor(backcolor, backcolor, backcolor, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     SetLight();
@@ -406,107 +405,23 @@ namespace netgen
         glMatrixMode (GL_MODELVIEW);
       }
 
-
-
-
     if (vispar.drawfilledtrigs || vispar.drawtetsdomain > 0 || vispar.drawdomainsurf > 0)
       {
-	// Change for Martin:
-
-	// orig:
-	SetClippingPlane ();  
-
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);   
-	// glEnable(GL_BLEND); 
-	glDisable(GL_BLEND); 
-	glCallList (surfellist);
-	glDisable(GL_BLEND); 
-	/*
-	// transparent test ...
-	glColor4f (1, 0, 0, 0.1);
-	glEnable (GL_COLOR_MATERIAL);
-
-	glDepthFunc(GL_GREATER); 
-	glDepthMask(GL_FALSE); 
-	// glBlendFunc(GL_ONE_MINUS_DST_ALPHA,GL_DST_ALPHA); 
-	glBlendFunc(GL_ONE_MINUS_SRC_ALPHA,GL_SRC_ALPHA); 
-
-	glCallList (surfellist);
-
-	glDisable(GL_BLEND);
-	glDepthFunc(GL_LEQUAL); 
-	glDepthMask(GL_TRUE); 
-
-	glCallList (surfellist);
-	// end test ...
-	*/
-	
-
+        SetClippingPlane ();
+        
+        glCallList (surfellist);
         glCallList (surface_vector_list);
+      
         glDisable(GL_CLIP_PLANE0);
       }
-
 
     if (showclipsolution)
       {
 	if (clipsolution == 1)
-	  {
-	    // Martin 
-	    // orig:
-	    glCallList (clipplanelist_scal);
-
-	    // transparent experiments
-	    // see http://wiki.delphigl.com/index.php/Blenden
-
-	    /*
-	    glColor4f (1, 1, 1, 0.5);
-	    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);   
-	    glEnable(GL_BLEND); 
-	    glEnable(GL_COLOR);
-	    glDepthFunc(GL_GREATER); 
-	    glDepthMask(GL_FALSE); 
-
-	    glCallList (clipplanelist_scal); 
-	    glDepthFunc(GL_LEQUAL); 
-	    glDepthMask(GL_TRUE); 
-
-	    glCallList (clipplanelist_scal);
-	    glDisable(GL_BLEND); 
-	    */
-
-
-	    /*
-	      // latest transparent version ...
-	    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);   
-	    glEnable(GL_BLEND); 
-	    glEnable(GL_DEPTH_TEST);
-
-	    // CreateTexture (numtexturecols, lineartexture, 0.25, GL_MODULATE);
-	    // glCallList (clipplanelist_scal); 
-
-	    glEnable(GL_BLEND); 
-	    // glDisable(GL_DEPTH_TEST);
-	    
-	    // CreateTexture (numtexturecols, lineartexture, 0.25, GL_MODULATE);
-	    glCallList (clipplanelist_scal); 
-
-
-	    // glDepthFunc(GL_LEQUAL); 
-	    // glDepthMask(GL_TRUE); 
-	    // glCallList (clipplanelist_scal);
-	    glEnable(GL_DEPTH_TEST);
-	    glDisable(GL_BLEND); 
-	    */
-	    // end test
-	  } 
+	  glCallList (clipplanelist_scal);
 	if (clipsolution == 2)
-	  {
-	    // glDisable(GL_DEPTH_TEST);
-	    glCallList (clipplanelist_vec);
-	    // glEnable(GL_DEPTH_TEST);
-	  }
+	  glCallList (clipplanelist_vec);
       }
-
 
 
     if (draw_fieldlines)
@@ -556,18 +471,11 @@ namespace netgen
     glColor3f (0.0f, 0.0f, 0.0f);
     glDisable (GL_LINE_SMOOTH);
 
-    if (vispar.drawedges)
-      {
-        glCallList (element1dlist);
-      }
 
     if (vispar.drawoutline && !numisolines)
       {
-	SetClippingPlane ();
-	glDepthMask(GL_FALSE); 
+        SetClippingPlane ();
         glCallList (linelist);
-	glDepthMask(GL_TRUE); 
-
         glDisable(GL_CLIP_PLANE0);
       }
 
@@ -597,8 +505,7 @@ namespace netgen
   }
   
 
-  
-  /*
+
   void VisualSceneSolution :: RealVec3d (const double * values, Vec3d & v, 
                                          bool iscomplex, bool imag)
   {
@@ -624,32 +531,7 @@ namespace netgen
           }
       }
   }
-  */
-  Vec<3>  VisualSceneSolution :: RealVec3d (const double * values, 
-					    bool iscomplex, bool imag)
-  {
-    Vec<3> v;
-    if (!iscomplex)
-      {
-	for (int j = 0; j < 3; j++)
-	  v(j) = values[j];
-      }
-    else
-      {
-        if (!imag)
-          {
-	    for (int j = 0; j < 3; j++)
-	      v(j) = values[2*j];
-          }
-        else
-          {
-	    for (int j = 0; j < 3; j++)
-	      v(j) = values[2*j+1];
-          }
-      }
-    return v;
-  }
-  
+
 
   void VisualSceneSolution :: RealVec3d (const double * values, Vec3d & v, 
                                          bool iscomplex, double phaser, double phasei)
@@ -768,11 +650,7 @@ namespace netgen
         surfellinetimestamp = max2 (solutiontimestamp, mesh->GetTimeStamp());
       }
 
-
-    if (vispar.drawedges)
-      Draw1DElements();
-
-
+  
 
     if (mesh->GetTimeStamp() > surface_vector_timestamp ||
         solutiontimestamp > surface_vector_timestamp ||
@@ -838,8 +716,7 @@ namespace netgen
 
                 bool drawelem = 
                   GetValues (vsol, p.elnr, p.lami(0), p.lami(1), p.lami(2), values);
-                // RealVec3d (values, v, vsol->iscomplex, imag_part);
-		v = RealVec3d (values, vsol->iscomplex, imag_part);
+                RealVec3d (values, v, vsol->iscomplex, imag_part);
 
                 double val = v.Length();
 
@@ -1087,56 +964,8 @@ namespace netgen
     clipplanetimestamp = max2 (vispar.clipping.timestamp, solutiontimestamp);
   }
   
-  void  VisualSceneSolution :: Draw1DElements ()
-  {
-    if (element1dlist)
-      glDeleteLists (element1dlist, 1);
- 
-    element1dlist = glGenLists (1);
-    glNewList (element1dlist, GL_COMPILE);
-
-    int npt = (1 << subdivisions) + 1;
-    Array<double> pref(npt), values(npt);
-    Array<Point<3> > points(npt);
-
-    const SolData * sol = NULL;
-    if (scalfunction != -1) sol = soldata[scalfunction];
-
-    int ncomp = 0;
-    if (sol) ncomp = sol->components;
-    Array<double> mvalues(ncomp);
 
 
-    for (int i = 0; i < npt; i++)
-      pref[i] = double(i) / (npt-1);
-
-    for (SegmentIndex i = 0; i < mesh -> GetNSeg(); i++)
-      {
-        // mesh->GetCurvedElements().
-        // CalcMultiPointSegmentTransformation (&pref, i, &points, NULL);
-        // const Segment & seg = mesh -> LineSegment(i);
-        for (int j = 0; j < npt; j++)
-          mesh->GetCurvedElements().
-            CalcSegmentTransformation (pref[j], i, points[j]);
-        if (sol)
-          {
-            for (int j = 0; j < npt; j++)
-              {
-                sol->solclass->GetSegmentValue (i, pref[j], &mvalues[0]);
-                values[j] = ExtractValue (sol, scalcomp, &mvalues[0]);
-                points[j](1) += scaledeform * values[j];
-              }
-          }
-
-        glBegin (GL_LINE_STRIP);
-        for (int i = 0; i < npt; i++)
-          glVertex3dv (points[i]);
-        glEnd();
-      }
-
-    glEndList ();
-  }
-  
   void  VisualSceneSolution :: DrawSurfaceElements ()
   {
     static int timer = NgProfiler::CreateTimer ("Solution::DrawSurfaceElements");
@@ -1194,7 +1023,7 @@ namespace netgen
 
     glLineWidth (1.0f);
 
-    GLfloat col_grey[] = { 0.6f, 0.6f, 0.6f, 1.0f };
+    GLfloat col_grey[] = { 0.6f, 0.6f, 0.6f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col_grey);
         
 
@@ -1249,17 +1078,16 @@ namespace netgen
 
             int npt = (n+1)*(n+1);
             if (curved)
-              {
-                for (int ii = 0; ii < npt; ii++)
-                  {
-                    Point<2> xref = pref[ii];
-                    
-                    mesh->GetCurvedElements().
-                      CalcSurfaceTransformation (xref, sei, points[ii], dxdxis[ii]);
-                    nvs[ii] = Cross (dxdxis[ii].Col(0), dxdxis[ii].Col(1));
-                    nvs[ii].Normalize();
-                  }
-              }
+              for (int ii = 0; ii < npt; ii++)
+                {
+                  Point<2> xref = pref[ii];
+                  Mat<3,2> dxdxi;
+                  
+                  mesh->GetCurvedElements().
+                    CalcSurfaceTransformation (xref, sei, points[ii], dxdxi);
+                  nvs[ii] = Cross (dxdxi.Col(0), dxdxi.Col(1));
+                  nvs[ii].Normalize();
+                }
             else
               {
 		Point<3> lpi[4];
@@ -1277,11 +1105,6 @@ namespace netgen
                     double x = pref[ii](0);
                     double y = pref[ii](1);
                     points[ii] = lpi[0] + x * vx + y * vy + x*y * vtwist;
-                    for (int j = 0; j < 3; j++)
-                      {
-                        dxdxis[ii](j,0) = vx(j) + y*vtwist(j);
-                        dxdxis[ii](j,1) = vy(j) + x*vtwist(j);
-                      }
                   }
 
                 Vec<3> nv = Cross (vx, vy);
@@ -1351,7 +1174,7 @@ namespace netgen
                                            valuesc[index[j]].imag() );
                         }
                       else
-                        glColor4fv (col_grey);
+                        glColor3fv (col_grey);
                       
                       glNormal3dv (nvs[index[j]]);
                       glVertex3dv (points[index[j]]);
@@ -1375,7 +1198,6 @@ namespace netgen
     for(SurfaceElementIndex sei = 0; sei < nse; sei++)
       {
         const Element2d & el = (*mesh)[sei];
-	// if (el.GetIndex() <= 1) continue;
 
         if(vispar.drawdomainsurf > 0)
 	  {
@@ -1475,7 +1297,7 @@ namespace netgen
                             glTexCoord2f ( valuesc[hi].real(), valuesc[hi].imag() );
                         }
                       else
-                        glColor4fv (col_grey);
+                        glColor3fv (col_grey);
                       
                       glNormal3dv (nvs[hi]);
                       glVertex3dv (points[hi]);
@@ -3570,10 +3392,7 @@ namespace netgen
     Vec<3> def;
     if (deform && vecfunction != -1)
       {
-        // GetSurfValues (soldata[vecfunction], elnr, facetnr, lam1, lam2,  &def(0));
-	double values[6];
-	GetSurfValues (soldata[vecfunction], elnr, facetnr, lam1, lam2,  values);
-	def = RealVec3d (values, soldata[vecfunction]->iscomplex, imag_part);
+        GetSurfValues (soldata[vecfunction], elnr, facetnr, lam1, lam2,  &def(0));
         def *= scaledeform;
 
         if (soldata[vecfunction]->components == 2) def(2) = 0;
@@ -4021,6 +3840,7 @@ namespace netgen
     if (scalfunction != -1) 
       sol = soldata[scalfunction];
 
+    
     if (sol -> draw_volume)
       {
 	glBegin (GL_TRIANGLES);
@@ -4046,10 +3866,10 @@ namespace netgen
     // complex<double> valc[3];
     int lastelnr = -1;
     int nlp = -1;
-    bool ok = false;
 
     for (int i = 0; i < trigs.Size(); i++)
       {
+	bool ok; //  = true;
         const ClipPlaneTrig & trig = trigs[i];
 	if (trig.elnr != lastelnr)
 	  {
@@ -4285,7 +4105,7 @@ namespace netgen
     Vec<3> p1p2 = p2 - p1;
 
     p1p2.Normalize();
-    // Vec<3> p2p1 = -p1p2;
+    Vec<3> p2p1 = -p1p2;
 
     Vec<3> t1 = p1p2.GetNormal();
     Vec<3> t2 = Cross (p1p2, t1);
@@ -4449,7 +4269,7 @@ namespace netgen
             int pointpos; // SZ 
             const char * pch = strchr(scalname,':');
             pointpos = int(pch-scalname+1);
-	    
+
             for (int i = 0; i < vssolution.soldata.Size(); i++)
               {
                 if ( (strlen (vssolution.soldata[i]->name) == pointpos-1) &&
@@ -4470,10 +4290,15 @@ namespace netgen
 		    scalname = Tcl_GetVar (interp, "::visoptions.scalfunction", TCL_GLOBAL_ONLY);
                   }
                 if (strcmp (vssolution.soldata[i]->name, vecname) == 0)
-		  vssolution.vecfunction = i;
-
+                  {
+                    vssolution.vecfunction = i;
+                    //cout  << "set vecfunction to " << i << endl;
+                  }
                 if (strcmp (vssolution.soldata[i]->name, fieldlines_vecname) == 0)
-		  vssolution.fieldlines_vecfunction = i;
+                  {
+                    vssolution.fieldlines_vecfunction = i;
+                    //cout  << "set fieldlines-vecfunction to " << i << endl;
+                  }
               }
 
             if(vssolution.fieldlines_vecfunction != -1 &&

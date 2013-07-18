@@ -190,6 +190,7 @@ GenerateMesh (Mesh & mesh, const MeshingParameters & mp)
   int found;
   referencetransform trans;
   int rotind;
+  INDEX globind;
   Point3d inp;
   float err;
 
@@ -656,7 +657,7 @@ GenerateMesh (Mesh & mesh, const MeshingParameters & mp)
 
 	  for (i = oldnp+1; i <= locpoints.Size(); i++)
 	    {
-	      PointIndex globind = mesh.AddPoint (locpoints.Get(i));
+	      globind = mesh.AddPoint (locpoints.Get(i));
 	      pindex.Elem(i) = adfront -> AddPoint (locpoints.Get(i), globind);
 	    }
 
@@ -746,7 +747,7 @@ void Meshing3 :: BlockFill (Mesh & mesh, double gh)
   
   for (i = 1; i <= adfront->GetNP(); i++)
     {
-      const Point3d & p = adfront->GetPoint(PointIndex(i));
+      const Point3d & p = adfront->GetPoint(i);
       if (i == 1)
 	{
 	  xmin = xmax = p.X();
@@ -776,8 +777,7 @@ void Meshing3 :: BlockFill (Mesh & mesh, double gh)
   PrintMessage (5, "n1 = ", n1, " n2 = ", n2, " n3 = ", n3);
 
   Array<blocktyp> inner(n);
-  Array<PointIndex> pointnr(n);
-  Array<int> frontpointnr(n);
+  Array<int> pointnr(n), frontpointnr(n);
 
 
   // initialize inner to 1
@@ -1187,7 +1187,7 @@ void Meshing3 :: BlockFillLocalH (Mesh & mesh,
     {
       if (meshbox.IsIn (npoints.Get(i)))
 	{
-	  PointIndex gpnum = mesh.AddPoint (npoints.Get(i));
+	  int gpnum = mesh.AddPoint (npoints.Get(i));
 	  adfront->AddPoint (npoints.Get(i), gpnum);
 
 	  if (debugparam.slowchecks)
@@ -1255,7 +1255,7 @@ void Meshing3 :: BlockFillLocalH (Mesh & mesh,
     {
       if (meshbox.IsIn (npoints.Get(i)))
 	{
-	  PointIndex gpnum = mesh.AddPoint (npoints.Get(i));
+	  int gpnum = mesh.AddPoint (npoints.Get(i));
 	  adfront->AddPoint (npoints.Get(i), gpnum);
 	}
     }  

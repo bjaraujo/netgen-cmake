@@ -533,7 +533,8 @@ namespace netgen
 
     Array<Vec<3>,PointIndex::BASE> normals(np);
 
-    for (PointIndex pi = mesh.Points().Begin(); pi < mesh.Points().End(); pi++)
+    for (PointIndex pi = PointIndex::BASE; 
+	 pi < np + PointIndex::BASE; pi++)
       {
 	if (elementsonnode[pi].Size())
 	  {

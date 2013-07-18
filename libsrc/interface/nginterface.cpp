@@ -8,6 +8,12 @@
 #include "../sockets/sockets.hpp"
 #endif
 
+/*
+#ifndef NOTCL
+#include <visual.hpp>
+#endif
+*/
+
 #include "nginterface.h"
 #include "../visualization/soldata.hpp"
 
@@ -103,8 +109,7 @@ namespace netgen
 
   // global variable mesh (should not be used in libraries)
   AutoPtr<Mesh> mesh;
-  // NetgenGeometry * ng_geometry = NULL; // new NetgenGeometry;
-  AutoPtr<NetgenGeometry> ng_geometry;
+  NetgenGeometry * ng_geometry = new NetgenGeometry;
 
   // extern NetgenGeometry * ng_geometry;
   // extern AutoPtr<Mesh> mesh;
@@ -113,6 +118,11 @@ namespace netgen
   extern Tcl_Interp * tcl_interp;
 #endif
 
+
+#ifdef OPENGL 
+  // extern VisualSceneSolution vssolution;
+#endif
+  // extern CSGeometry * ParseCSG (istream & istr);
 
 #ifdef SOCKETS
   extern AutoPtr<ClientSocket> clientsocket;
@@ -129,25 +139,28 @@ using namespace netgen;
 
 void Ng_LoadGeometry (const char * filename)
 {
-  // he: if filename is empty, return
-  // can be used to reset geometry
-  if (!filename || strcmp(filename,"")==0) 
-    {
-      ng_geometry.Reset (new NetgenGeometry());
-      return;
-    }
 
   for (int i = 0; i < geometryregister.Size(); i++)
     {
       NetgenGeometry * hgeom = geometryregister[i]->Load (filename);
       if (hgeom)
 	{
-          ng_geometry.Reset (hgeom);
+	  delete ng_geometry;
+	  ng_geometry = hgeom;
+	  
 	  mesh.Reset();
 	  return;
 	}
     }
 
+  // he: if filename is empty, return
+  // can be used to reset geometry
+  if (strcmp(filename,"")==0) 
+    {
+      delete ng_geometry;
+      ng_geometry = new NetgenGeometry();
+      return;
+    }
 
   // if (id == 0)
   cerr << "cannot load geometry '" << filename << "'" << ", id = " << id << endl;
@@ -164,10 +177,55 @@ void Ng_LoadMeshFromStream ( istream & input )
       NetgenGeometry * hgeom = geometryregister[i]->LoadFromMeshFile (input);
       if (hgeom)
 	{
-          ng_geometry.Reset (hgeom);
+	  delete ng_geometry;
+	  ng_geometry = hgeom;
 	  break;
 	}
     }
+
+
+#ifdef LOADOLD
+  if(input.good())
+    {
+      string auxstring;
+      input >> auxstring;
+      if(auxstring == "csgsurfaces")
+	{
+	  /*
+	    if (geometry)
+            {
+	    geometry.Reset (new CSGeometry (""));
+            }
+	    if (stlgeometry)
+	    {
+	    delete stlgeometry;
+	    stlgeometry = NULL;
+	    }
+	    #ifdef OCCGEOMETRY
+	    if (occgeometry)
+	    {
+	    delete occgeometry;
+	    occgeometry = NULL;
+	    }
+	    #endif
+	    #ifdef ACIS
+	    if (acisgeometry)
+	    {
+	    delete acisgeometry;
+	    acisgeometry = NULL;
+	    }
+	    #endif
+	    geometry2d.Reset (0);
+	  */
+ 	  // geometry -> LoadSurfaces(input);
+	  CSGeometry * geometry = new CSGeometry ("");
+	  geometry -> LoadSurfaces(input);
+
+	  delete ng_geometry;
+	  ng_geometry = geometry;
+	}
+    }
+#endif 
 }
 
 
@@ -178,15 +236,11 @@ void Ng_LoadMesh (const char * filename)
 #ifdef PARALLEL
   MPI_Comm_size(MPI_COMM_WORLD, &ntasks);
   MPI_Comm_rank(MPI_COMM_WORLD, &id);
-
+#endif
   if (id == 0)
     {
-#endif
-      if ( string(filename).find(".vol") == string::npos )
-        /*
       if ( (strlen (filename) > 4) &&
 	   strcmp (filename + (strlen (filename)-4), ".vol") != 0 )
-        */
 	{
 	  mesh.Reset (new Mesh());
 	  ReadFile(*mesh,filename);
@@ -195,21 +249,15 @@ void Ng_LoadMesh (const char * filename)
 	  //mesh->CalcLocalH();
 	  return;
 	}
-
-      string fn(filename);
-
-      istream * infile;
-      if (fn.substr (fn.length()-3, 3) == ".gz")
-        infile = new igzstream (filename);
-      else
-        infile = new ifstream (filename);
-
-      Ng_LoadMeshFromStream(*infile);
-      delete infile;
       
+      ifstream infile(filename);
+      Ng_LoadMeshFromStream(infile);
+
 #ifdef PARALLEL
       if (ntasks > 1)
 	{
+	  // MyMPI_SendCmd ("mesh");
+	  // mesh -> Distribute();
 
 	  char * weightsfilename = new char [strlen(filename)+1];
 	  strcpy (weightsfilename, filename);            
@@ -270,7 +318,9 @@ void Ng_LoadMesh (const char * filename)
 	      mesh -> Distribute(volume_weights, surface_weights, segment_weights);
 	    }
 	}
+#endif
     }
+#ifdef PARALLEL
   else
     {
       mesh.Reset (new Mesh());
@@ -399,12 +449,21 @@ NG_ELEMENT_TYPE Ng_GetElement (int ei, int * epi, int * np)
     }
   else
     {
+      int i;
       const Element2d & el = mesh->SurfaceElement (ei);
-      for (int i = 0; i < el.GetNP(); i++)
+      for (i = 0; i < el.GetNP(); i++)
 	epi[i] = el.PNum(i+1);      
 
       if (np) *np = el.GetNP();
       return NG_ELEMENT_TYPE (el.GetType());
+      /*
+	switch (el.GetNP())
+	{
+	case 3: return NG_TRIG; 
+	case 4: return NG_QUAD; 
+	case 6: return NG_TRIG6; 
+	}
+      */
     }
 
   // should not occur
@@ -629,7 +688,7 @@ void Ng_GetNormalVector (int sei, int locpi, double * nv)
 	  nv[2] = n(2);
 	}
 #endif
-      CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+      CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
       if (geometry)
 	{
 	  n = geometry->GetSurface (surfi) -> GetNormalVector(p);
@@ -727,19 +786,10 @@ int Ng_FindSurfaceElementOfPoint (double * p, double * lami, int build_searchtre
 
 int Ng_IsElementCurved (int ei)
 {
-  switch (mesh->GetDimension())
-    {
-    case 1: return mesh->GetCurvedElements().IsSegmentCurved (ei-1);
-    case 2: return mesh->GetCurvedElements().IsSurfaceElementCurved (ei-1);
-    case 3: return mesh->GetCurvedElements().IsElementCurved (ei-1);
-    }
-  return 0;
-  /*
   if (mesh->GetDimension() == 2)
     return mesh->GetCurvedElements().IsSurfaceElementCurved (ei-1);
   else
     return mesh->GetCurvedElements().IsElementCurved (ei-1);
-  */
 }
 
 
@@ -805,6 +855,56 @@ void Ng_GetElementTransformation (int ei, const double * xi,
 	}
     }
 }
+
+
+#ifdef OLD
+void Ng_GetBufferedElementTransformation (int ei, const double * xi, 
+                                          double * x, double * dxdxi,
+                                          void * buffer, int buffervalid)
+{
+  // buffer = 0;
+  // buffervalid = 0;
+  if (mesh->GetDimension() == 2)
+    {
+      return Ng_GetElementTransformation (ei, xi, x, dxdxi);
+    }
+  else
+    {
+      mesh->GetCurvedElements().CalcElementTransformation (reinterpret_cast<const Point<3> &> (*xi), 
+                                                           ei-1, 
+                                                           reinterpret_cast<Point<3> &> (*x), 
+                                                           reinterpret_cast<Mat<3,3> &> (*dxdxi), 
+                                                           buffer, (buffervalid != 0));
+
+      /*
+	Point<3> xl(xi[0], xi[1], xi[2]);
+	Point<3> xg;
+	Mat<3,3> dx;
+	// buffervalid = 0;
+	mesh->GetCurvedElements().CalcElementTransformation (xl, ei-1, xg, dx, buffer, buffervalid);
+
+	// still 1-based arrays
+	if (x)
+	{
+	for (int i = 0; i < 3; i++)
+	x[i] = xg(i);
+	}
+
+	if (dxdxi)
+	{
+	for (int i=0; i<3; i++)
+	{
+	dxdxi[3*i] = dx(i,0);
+	dxdxi[3*i+1] = dx(i,1);
+	dxdxi[3*i+2] = dx(i,2);
+	}
+	}
+      */
+    }
+}
+#endif
+
+
 
 
 
@@ -1613,46 +1713,25 @@ void Ng_GetEdge_Vertices (int ednr, int * vert)
 
 int Ng_GetNVertexElements (int vnr)
 {
-  switch (mesh->GetDimension())
-    {
-    case 3:
-      return mesh->GetTopology().GetVertexElements(vnr).Size();
-    case 2:
-      return mesh->GetTopology().GetVertexSurfaceElements(vnr).Size();
-    case 1:
-      {
-        int cnt = 0;
-        for (SegmentIndex i = 0; i < mesh->GetNSeg(); i++)
-          if ( ((*mesh)[i][0] == vnr) || ((*mesh)[i][1] == vnr) ) cnt++;
-        return cnt;
-      }
-    }
+  if (mesh->GetDimension() == 3)
+    return mesh->GetTopology().GetVertexElements(vnr).Size();
+  else
+    return mesh->GetTopology().GetVertexSurfaceElements(vnr).Size();
 }
 
 void Ng_GetVertexElements (int vnr, int * els)
 {
-  switch (mesh->GetDimension())
+  if (mesh->GetDimension() == 3)
     {
-    case 3:
-      {
-        FlatArray<ElementIndex> ia = mesh->GetTopology().GetVertexElements(vnr);
-        for (int i = 0; i < ia.Size(); i++) els[i] = ia[i]+1;
-        break;
-      }
-    case 2:
-      {
-        FlatArray<int> ia = mesh->GetTopology().GetVertexSurfaceElements(vnr);
-        for (int i = 0; i < ia.Size(); i++) els[i] = ia[i];
-        break;
-      }
-    case 1:
-      {
-        int cnt = 0;
-        for (SegmentIndex i = 0; i < mesh->GetNSeg(); i++)
-          if ( ((*mesh)[i][0] == vnr) || ((*mesh)[i][1] == vnr) ) 
-            els[cnt++] = i+1;
-        break;
-      }
+      FlatArray<ElementIndex> ia = mesh->GetTopology().GetVertexElements(vnr);
+      for (int i = 0; i < ia.Size(); i++)
+	els[i] = ia[i]+1;
+    }
+  else
+    {
+      FlatArray<int> ia = mesh->GetTopology().GetVertexSurfaceElements(vnr);
+      for (int i = 0; i < ia.Size(); i++)
+	els[i] = ia[i];
     }
 }
 
@@ -1815,7 +1894,7 @@ void Ng_GetPeriodicVertices (int idnr, int * pairs)
 
 int Ng_GetNPeriodicEdges (int idnr)
 {
-  Array<int,PointIndex::BASE> map;
+  Array<INDEX,PointIndex::BASE> map;
   //const MeshTopology & top = mesh->GetTopology();
   int nse = mesh->GetNSeg();
 
@@ -1827,8 +1906,8 @@ int Ng_GetNPeriodicEdges (int idnr)
 
     for (SegmentIndex si = 0; si < nse; si++)
       {
-	PointIndex other1 = PointIndex (map[(*mesh)[si][0]]);
-	PointIndex other2 = PointIndex (map[(*mesh)[si][1]]);
+	PointIndex other1 = map[(*mesh)[si][0]];
+	PointIndex other2 = map[(*mesh)[si][1]];
 	//  (*testout) << "seg = " << (*mesh)[si] << "; other = " 
 	//     << other1 << "-" << other2 << endl;
 	if (other1 && other2 && mesh->IsSegment (other1, other2))
@@ -1842,7 +1921,7 @@ int Ng_GetNPeriodicEdges (int idnr)
 
 void Ng_GetPeriodicEdges (int idnr, int * pairs)
 {
-  Array<int,PointIndex::BASE> map;
+  Array<INDEX,PointIndex::BASE> map;
   const MeshTopology & top = mesh->GetTopology();
   int nse = mesh->GetNSeg();
 
@@ -1855,8 +1934,8 @@ void Ng_GetPeriodicEdges (int idnr, int * pairs)
 
     for (SegmentIndex si = 0; si < nse; si++)
       {
-	PointIndex other1 = PointIndex (map[(*mesh)[si][0]]);
-	PointIndex other2 = PointIndex (map[(*mesh)[si][1]]);
+	PointIndex other1 = map[(*mesh)[si][0]];
+	PointIndex other2 = map[(*mesh)[si][1]];
 	if (other1 && other2 && mesh->IsSegment (other1, other2))
 	  {
 	    SegmentIndex otherseg = mesh->SegmentNr (other1, other2);
@@ -2096,7 +2175,7 @@ int Ng_Bisect_WithInfo ( const char * refinementfile, double ** qualityloss, int
 #endif
     {
       // ref = new RefinementSurfaces(*geometry);
-      CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+      CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
       if (geometry)
 	{
 	  opt = new MeshOptimize2dSurfaces(*geometry);

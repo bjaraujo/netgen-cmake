@@ -176,7 +176,7 @@ public:
 class AdFront3
 {
   ///
-  Array<FrontPoint3, PointIndex::BASE, PointIndex> points;
+Array<FrontPoint3, PointIndex::BASE> points;
   ///
 Array<FrontFace> faces;
   ///
@@ -208,7 +208,7 @@ int rebuildcounter;
 int lasti;
   /// minimal selection-value of baseelements
 int minval;
-  Array<int, PointIndex::BASE, PointIndex> invpindex;
+  Array<int, PointIndex::BASE> invpindex;
   Array<char> pingroup;
   
   ///

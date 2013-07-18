@@ -17,8 +17,7 @@ extern "C" int Ng_CSG_Init (Tcl_Interp * interp);
 
 namespace netgen
 {
-  // extern DLL_HEADER NetgenGeometry * ng_geometry;
-  extern DLL_HEADER AutoPtr<NetgenGeometry> ng_geometry;
+  extern DLL_HEADER NetgenGeometry * ng_geometry;
   extern DLL_HEADER AutoPtr<Mesh> mesh;
 
   static VisualSceneGeometry vsgeom;
@@ -34,7 +33,7 @@ namespace netgen
 			Tcl_Interp * interp,
 			int argc, tcl_const char *argv[])
   {
-    CSGeometry * csgeom = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * csgeom = dynamic_cast<CSGeometry*> (ng_geometry);
     if (csgeom)
       {
 	double detail = atof (Tcl_GetVar (interp, "::geooptions.detail", 0));
@@ -53,7 +52,7 @@ namespace netgen
 			  Tcl_Interp * interp,
 			  int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
 
 
     const char * command = argv[1];
@@ -108,7 +107,7 @@ namespace netgen
 			  Tcl_Interp * interp,
 			  int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -143,7 +142,7 @@ namespace netgen
 			   Tcl_Interp * interp,
 			   int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -181,7 +180,7 @@ namespace netgen
 		       Tcl_Interp * interp,
 		       int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -208,7 +207,7 @@ namespace netgen
 			   Tcl_Interp * interp,
 			   int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -246,7 +245,7 @@ namespace netgen
 		       Tcl_Interp * interp,
 		       int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -273,7 +272,7 @@ namespace netgen
 			   Tcl_Interp * interp,
 			   int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -306,7 +305,7 @@ namespace netgen
 			 Tcl_Interp * interp,
 			 int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -337,7 +336,7 @@ namespace netgen
 		       Tcl_Interp * interp,
 		       int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -368,7 +367,7 @@ namespace netgen
 		   Tcl_Interp * interp,
 		   int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -493,7 +492,7 @@ namespace netgen
 			 Tcl_Interp * interp,
 			 int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -522,7 +521,7 @@ namespace netgen
 			  Tcl_Interp * interp,
 			  int argc, tcl_const char *argv[])
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (!geometry)
       {
 	Tcl_SetResult (interp, err_needscsgeometry, TCL_STATIC);
@@ -611,7 +610,7 @@ namespace netgen
 
   VisualScene * CSGeometryRegister :: GetVisualScene (const NetgenGeometry * geom) const
   {
-    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry.Ptr());
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (geometry)
       {
 	vsgeom.SetGeometry (geometry);
@@ -632,10 +631,10 @@ namespace netgen
 
   VisualScene * CSGeometryVisRegister :: GetVisualScene (const NetgenGeometry * geom) const
   {
-    const CSGeometry * geometry = dynamic_cast<const CSGeometry*> (geom);
+    CSGeometry * geometry = dynamic_cast<CSGeometry*> (ng_geometry);
     if (geometry)
       {
-	vsgeom.SetGeometry (const_cast<CSGeometry*>(geometry));
+	vsgeom.SetGeometry (geometry);
 	return &vsgeom;
       }
     return NULL;

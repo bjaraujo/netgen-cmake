@@ -13,6 +13,7 @@
 
 namespace netgen
 {
+
   enum resthtype { RESTRICTH_FACE, RESTRICTH_EDGE, 
 		   RESTRICTH_SURFACEELEMENT, RESTRICTH_POINT, RESTRICTH_SEGMENT };
 
@@ -24,8 +25,15 @@ namespace netgen
   {
   public:
     typedef ::netgen::T_POINTS T_POINTS;
+
+    // typedef MoveableArray<MeshPoint,PointIndex::BASE> T_POINTS;
+    // typedef MoveableArray<Element> T_VOLELEMENTS;
+    // typedef MoveableArray<Element2d> T_SURFELEMENTS;
+
+    // typedef Array<MeshPoint,PointIndex::BASE> T_POINTS;
     typedef Array<Element> T_VOLELEMENTS;
     typedef Array<Element2d> T_SURFELEMENTS;
+
 
   private:
     /// point coordinates
@@ -97,7 +105,7 @@ namespace netgen
     /// geometric search tree for interval intersection search
     Box3dTree * elementsearchtree;
     /// time stamp for tree
-    mutable int elementsearchtreets;
+    int elementsearchtreets;
 
     /// element -> face, element -> edge etc ...
     class MeshTopology * topology;
@@ -208,7 +216,12 @@ namespace netgen
 
     DLL_HEADER PointIndex AddPoint (const Point3d & p, int layer = 1);
     DLL_HEADER PointIndex AddPoint (const Point3d & p, int layer, POINTTYPE type);
-
+    /*
+#ifdef PARALLEL
+    PointIndex AddPoint (const Point3d & p, bool aisghost, int layer = 1);
+    PointIndex AddPoint (const Point3d & p, bool aisghost, int layer, POINTTYPE type);
+#endif
+    */
     int GetNP () const { return points.Size(); }
 
     MeshPoint & Point(int i) { return points.Elem(i); }
@@ -531,22 +544,22 @@ namespace netgen
     void SetPointSearchStartElement(const int el) const {ps_startelement = el;}
 
     /// gives element of point, barycentric coordinates
-    int GetElementOfPoint (const netgen::Point<3> & p,
+    int GetElementOfPoint (const Point3d & p,
 			   double * lami,
 			   bool build_searchtree = 0,
 			   const int index = -1,
 			   const bool allowindex = true) const;
-    int GetElementOfPoint (const netgen::Point<3> & p,
+    int GetElementOfPoint (const Point3d & p,
 			   double * lami,
 			   const Array<int> * const indices,
 			   bool build_searchtree = 0,
 			   const bool allowindex = true) const;
-    int GetSurfaceElementOfPoint (const netgen::Point<3> & p,
+    int GetSurfaceElementOfPoint (const Point3d & p,
 				  double * lami,
 				  bool build_searchtree = 0,
 				  const int index = -1,
 				  const bool allowindex = true) const;
-    int GetSurfaceElementOfPoint (const netgen::Point<3> & p,
+    int GetSurfaceElementOfPoint (const Point3d & p,
 				  double * lami,
 				  const Array<int> * const indices,
 				  bool build_searchtree = 0,

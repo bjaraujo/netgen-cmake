@@ -48,10 +48,6 @@ namespace netgen
       layer = 1;
     }
 
-    ~SplineSegExt ()
-    {
-      delete &seg;
-    }
     
     virtual const GeomPoint<2> & StartPI () const 
     { 

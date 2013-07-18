@@ -366,14 +366,7 @@ namespace netgen
 	clipplane[2] = n.Z();
 	clipplane[3] = -(Vec3d(center) * n) + rad * vispar.clipping.dist;
 
-	double clipplane2[4];
-	clipplane2[0] = n.X();
-	clipplane2[1] = n.Y();
-	clipplane2[2] = n.Z();
-	clipplane2[3] = -(Vec3d(center) * n) + 
-	  rad * (vispar.clipping.dist + vispar.clipping.dist2);
-
-	glClipPlane(GL_CLIP_PLANE0, clipplane2);
+	glClipPlane(GL_CLIP_PLANE0, clipplane);
 	glEnable(GL_CLIP_PLANE0);
       }
     else
@@ -469,7 +462,7 @@ namespace netgen
 
 
 
-  void VisualScene :: CreateTexture (int ncols, int linear, double alpha, int typ)
+  void VisualScene :: CreateTexture (int ncols, int linear, int typ)
   {
     if (linear) ncols = 32;
     else   ncols = 8;
@@ -509,7 +502,7 @@ namespace netgen
 	    colortexture[4*i] = GLubyte (255 * col[0]);
 	    colortexture[4*i+1] = GLubyte (255 * col[1]);
 	    colortexture[4*i+2] = GLubyte (255 * col[2]);
-	    colortexture[4*i+3] = GLubyte(255*alpha);
+	    colortexture[4*i+3] = GLubyte(255);
 	  }
 
 	// glPixelStorei (GL_UNPACK_ALIGNMENT, 1);
@@ -554,7 +547,7 @@ namespace netgen
   {
     if (!vispar.drawcolorbar) return;
 
-    CreateTexture (8, linear, 1, GL_DECAL);
+    CreateTexture (8, linear, GL_DECAL);
 
     if (logscale && maxval <= 0) maxval = 1;
     if (logscale && minval <= 0) minval = 1e-4 * maxval;

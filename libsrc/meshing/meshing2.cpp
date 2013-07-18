@@ -221,6 +221,7 @@ namespace netgen
     int z1, z2, oldnp(-1);
     bool found;
     int rulenr(-1);
+    int globind;
     Point<3> p1, p2;
 
     const PointGeomInfo * blgeominfo1;
@@ -1242,7 +1243,7 @@ namespace netgen
 	      
 	    for (int i = oldnp+1; i <= locpoints.Size(); i++)
 	      {
-		PointIndex globind = mesh.AddPoint (locpoints.Get(i));
+		globind = mesh.AddPoint (locpoints.Get(i));
 		pindex.Elem(i) = adfront -> AddPoint (locpoints.Get(i), globind);
 	      }
 	      

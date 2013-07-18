@@ -12,7 +12,6 @@ namespace netgen
 {
 
   // template <class T, int B1, int B2> class IndirectArray;
-  template <class TA1, class TA2> class IndirectArray;
 
 
 
@@ -24,7 +23,7 @@ namespace netgen
      Optional range check by macro RANGE_CHECK
   */
 
-  template <typename T, int BASE = 0, typename TIND = int>
+  template <class T, int BASE = 0>
   class FlatArray
   {
   protected:
@@ -33,7 +32,6 @@ namespace netgen
     /// the data
     T * data;
   public:
-    typedef T TELEM;
 
     /// provide size and memory
     FlatArray (int asize, T * adata) 
@@ -42,11 +40,11 @@ namespace netgen
     /// the size
     int Size() const { return size; }
 
-    TIND Begin() const { return TIND(BASE); }
-    TIND End() const { return TIND(size+BASE); }
+    int Begin() const { return BASE; }
+    int End() const { return size+BASE; }
 
     /// Access array. BASE-based
-    T & operator[] (TIND i) const
+    T & operator[] (int i) const
     {
 #ifdef DEBUG
       if (i-BASE < 0 || i-BASE >= size)
@@ -55,14 +53,6 @@ namespace netgen
 
       return data[i-BASE]; 
     }
-
-    template <typename T2, int B2>
-    IndirectArray<FlatArray, FlatArray<T2,B2> > operator[] (const FlatArray<T2,B2> & ia) const
-    {
-      return IndirectArray<FlatArray, FlatArray<T2,B2> > (*this, ia);
-    }
-
-
 
     /// Access array, one-based  (old fashioned)
     T & Elem (int i)
@@ -123,16 +113,16 @@ namespace netgen
     }
 
     /// takes range starting from position start of end-start elements
-    const FlatArray<T> Range (TIND start, TIND end)
+    const FlatArray<T> Range (int start, int end)
     {
       return FlatArray<T> (end-start, data+start);
     }
 
     /// first position of element elem, returns -1 if element not contained in array 
-    TIND Pos(const T & elem) const
+    int Pos(const T & elem) const
     {
-      TIND pos = -1;
-      for(TIND i=0; pos==-1 && i < this->size; i++)
+      int pos = -1;
+      for(int i=0; pos==-1 && i < this->size; i++)
 	if(elem == data[i]) pos = i;
       return pos;
     }
@@ -147,10 +137,10 @@ namespace netgen
 
 
   // print array
-  template <typename T, int BASE, typename TIND>
-  inline ostream & operator<< (ostream & s, const FlatArray<T,BASE,TIND> & a)
+  template <class T, int BASE>
+  inline ostream & operator<< (ostream & s, const FlatArray<T,BASE> & a)
   {
-    for (TIND i = a.Begin(); i < a.End(); i++)
+    for (int i = a.Begin(); i < a.End(); i++)
       s << i << ": " << a[i] << endl;
     return s;
   }
@@ -165,12 +155,12 @@ namespace netgen
       Either the container takes care of memory allocation and deallocation,
       or the user provides one block of data.
   */
-  template <class T, int BASE = 0, typename TIND = int> 
-  class Array : public FlatArray<T, BASE, TIND>
+  template <class T, int BASE = 0> 
+  class Array : public FlatArray<T, BASE>
   {
   protected:
-    using FlatArray<T,BASE,TIND>::size;
-    using FlatArray<T,BASE,TIND>::data;
+    using FlatArray<T,BASE>::size;
+    using FlatArray<T,BASE>::data;
 
     /// physical size of array
     int allocsize;
@@ -181,34 +171,34 @@ namespace netgen
 
     /// Generate array of logical and physical size asize
     explicit Array()
-      : FlatArray<T, BASE, TIND> (0, NULL)
+      : FlatArray<T, BASE> (0, NULL)
     {
       allocsize = 0; 
       ownmem = 1;
     }
 
     explicit Array(int asize)
-      : FlatArray<T, BASE, TIND> (asize, new T[asize])
+      : FlatArray<T, BASE> (asize, new T[asize])
     {
       allocsize = asize; 
       ownmem = 1;
     }
 
     /// Generate array in user data
-    Array(TIND asize, T* adata)
-      : FlatArray<T, BASE, TIND> (asize, adata)
+    Array(int asize, T* adata)
+      : FlatArray<T, BASE> (asize, adata)
     {
       allocsize = asize; 
       ownmem = 0;
     }
 
     /// array copy 
-    explicit Array (const Array<T,BASE,TIND> & a2)
-      : FlatArray<T, BASE, TIND> (a2.Size(), a2.Size() ? new T[a2.Size()] : 0)
+    explicit Array (const Array<T> & a2)
+      : FlatArray<T, BASE> (a2.Size(), a2.Size() ? new T[a2.Size()] : 0)
     {
       allocsize = size;
       ownmem = 1;
-      for (TIND i = BASE; i < size+BASE; i++)
+      for (int i = BASE; i < size+BASE; i++)
 	(*this)[i] = a2[i];
     }
 
@@ -259,7 +249,7 @@ namespace netgen
 
 
     /// Delete element i (0-based). Move last element to position i.
-    void Delete (TIND i)
+    void Delete (int i)
     {
 #ifdef CHECK_Array_RANGE
       RangeCheck (i+1);
@@ -272,7 +262,7 @@ namespace netgen
 
 
     /// Delete element i (1-based). Move last element to position i.
-    void DeleteElement (TIND i)
+    void DeleteElement (int i)
     {
 #ifdef CHECK_Array_RANGE
       RangeCheck (i);
@@ -300,7 +290,7 @@ namespace netgen
     /// Fill array with val
     Array & operator= (const T & val)
     {
-      FlatArray<T, BASE, TIND>::operator= (val);
+      FlatArray<T, BASE>::operator= (val);
       return *this;
     }
 
@@ -308,7 +298,7 @@ namespace netgen
     Array & operator= (const Array & a2)
     {
       SetSize (a2.Size());
-      for (TIND i (BASE); i < size+BASE; i++)
+      for (int i = BASE; i < size+BASE; i++)
 	(*this)[i] = a2[i];
       return *this;
     }
@@ -317,7 +307,7 @@ namespace netgen
     Array & operator= (const FlatArray<T> & a2)
     {
       SetSize (a2.Size());
-      for (TIND i = BASE; i < size+BASE; i++)
+      for (int i = BASE; i < size+BASE; i++)
 	(*this)[i] = a2[i];
       return *this;
     }
@@ -399,49 +389,29 @@ namespace netgen
 
 
 
+
   /*
-  template <class T, int B1, int B2>
-  class IndirectArray
-  {
+    template <class T, int B1, int B2>
+    class IndirectArray
+    {
     const FlatArray<T, B1> & array;
     const FlatArray<int, B2> & ia; 
-    
-  public:
+
+    public:
     IndirectArray (const FlatArray<T,B1> & aa, const FlatArray<int, B2> & aia)
     : array(aa), ia(aia) { ; }
     int Size() const { return ia.Size(); }
     const T & operator[] (int i) const { return array[ia[i]]; }
-  };
+    };
   */
 
-  template <class TA1, class TA2>
-  class IndirectArray
-  {
-    const TA1 & array;
-    const TA2 & ia; 
-    
-  public:
-    IndirectArray (const TA1 & aa, const TA2 & aia)
-    : array(aa), ia(aia) { ; }
-    int Size() const { return ia.Size(); }
-    int Begin() const { return ia.Begin(); }
-    int End() const { return ia.End(); }
-
-    const typename TA1::TELEM & operator[] (int i) const { return array[ia[i]]; }
-  };
 
 
-  template <typename T1, typename T2>
-  inline ostream & operator<< (ostream & s, const IndirectArray<T1,T2> & ia)
-  {
-    for (int i = ia.Begin(); i < ia.End(); i++)
-      s << i << ": " << ia[i] << endl;
-    return s;
-  }
-  
 
 
-  /*
+
+
+
 
   ///
   template <class T, int BASE = 0> 
@@ -596,7 +566,7 @@ namespace netgen
       ost << i << ": " << a[i] << endl;
     return ost;
   }
-  */
+
 
 
   /// bubble sort array

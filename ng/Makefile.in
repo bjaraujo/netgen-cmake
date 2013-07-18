@@ -37,8 +37,6 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @NGGUI_TRUE@bin_PROGRAMS = netgen$(EXEEXT)
-#  nginterface.cpp nginterface_v2.cpp
-@NGMKL_TRUE@am__append_1 = -DLINKMKL
 subdir = ng
 DIST_COMMON = $(dist_bin_SCRIPTS) $(include_HEADERS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -61,7 +59,7 @@ am_netgen_OBJECTS = demoview.$(OBJEXT) ngappinit.$(OBJEXT) \
 netgen_OBJECTS = $(am_netgen_OBJECTS)
 am__DEPENDENCIES_1 =
 netgen_DEPENDENCIES =  \
-	$(top_builddir)/libsrc/visualization/libvisual.la \
+	$(top_builddir)/libsrc/visualization/libvisual.a \
 	$(top_builddir)/libsrc/csg/libcsgvis.la \
 	$(top_builddir)/libsrc/csg/libcsg.la \
 	$(top_builddir)/libsrc/interface/libinterface.la \
@@ -69,8 +67,7 @@ netgen_DEPENDENCIES =  \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 netgen_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(netgen_LDFLAGS) $(LDFLAGS) -o $@
@@ -190,7 +187,6 @@ OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OCCFLAGS = @OCCFLAGS@
 OCCLIBS = @OCCLIBS@
-OPENMP_CXXFLAGS = @OPENMP_CXXFLAGS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -232,7 +228,6 @@ TCL_STUB_LIB_FLAG = @TCL_STUB_LIB_FLAG@
 TCL_STUB_LIB_SPEC = @TCL_STUB_LIB_SPEC@
 TCL_VERSION = @TCL_VERSION@
 TK_BIN_DIR = @TK_BIN_DIR@
-TK_INCLUDES = @TK_INCLUDES@
 TK_LIBS = @TK_LIBS@
 TK_LIB_FILE = @TK_LIB_FILE@
 TK_LIB_FLAG = @TK_LIB_FLAG@
@@ -300,19 +295,15 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 include_HEADERS = 
-AM_CPPFLAGS = -I$(top_srcdir)/libsrc/include \
-	-I$(top_srcdir)/libsrc/interface -DOPENGL \
-	-D$(TOGL_WINDOWINGSYSTEM) $(TCL_INCLUDES) $(MPI_INCLUDES) \
-	$(FFMPEG_INCLUDES) $(JPEGLIB_INCLUDES) $(am__append_1)
+AM_CPPFLAGS = -I$(top_srcdir)/libsrc/include -I$(top_srcdir)/libsrc/interface -DOPENGL  -D$(TOGL_WINDOWINGSYSTEM)  $(TCL_INCLUDES) $(MPI_INCLUDES) $(FFMPEG_INCLUDES) $(JPEGLIB_INCLUDES)
 netgen_SOURCES = demoview.cpp ngappinit.cpp onetcl.cpp parallelfunc.cpp ngpkg.cpp demoview.hpp parallelfunc.hpp togl_1_7.h
-@NGMKL_TRUE@MKL_LIBS = -L$(MKLROOT)/lib/intel64  -lmkl_intel_lp64 -lmkl_gnu_thread -lmkl_core -lmkl_def
-netgen_LDADD = $(top_builddir)/libsrc/visualization/libvisual.la \
+#  nginterface.cpp nginterface_v2.cpp
+netgen_LDADD = $(top_builddir)/libsrc/visualization/libvisual.a \
 	$(top_builddir)/libsrc/csg/libcsgvis.la \
 	$(top_builddir)/libsrc/csg/libcsg.la \
 	$(top_builddir)/libsrc/interface/libinterface.la \
 	$(top_builddir)/libsrc/meshing/libmesh.la \
-	-L$(TK_BIN_DIR)/Togl1.7 $(TOGLLIBDIR) -lTogl $(LIBGLU) $(TK_LIB_SPEC) $(TCL_LIB_SPEC) $(MPI_LIBS) $(FFMPEG_LIBS) $(JPEGLIB_LIBS) $(PKG_LIBS) $(MKL_LIBS)
-
+	-L$(TK_BIN_DIR)/Togl1.7 $(TOGLLIBDIR) -lTogl $(LIBGLU) $(TK_LIB_SPEC) $(TCL_LIB_SPEC) $(MPI_LIBS) $(FFMPEG_LIBS) $(JPEGLIB_LIBS) $(PKG_LIBS)
 
 #
 #	$(top_builddir)/libsrc/occ/liboccvis.la 
@@ -331,7 +322,7 @@ ngvisual.tcl sockets.tcl drawing.tcl nghelp.tcl ngshell.tcl	  \
 ngtesting.tcl parameters.tcl variables.tcl csgeom.tcl stlgeom.tcl \
 occgeom.tcl acisgeom.tcl netgen.ocf
 
-netgen_LDFLAGS = -export-dynamic 
+netgen_LDFLAGS = -rdynamic 
 all: all-am
 
 .SUFFIXES:
@@ -711,7 +702,6 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_binSCRIPTS \
 	uninstall-am uninstall-binPROGRAMS uninstall-dist_binSCRIPTS \
 	uninstall-includeHEADERS
 
-# netgen_LDFLAGS = -rdynamic 
 # -static
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

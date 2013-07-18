@@ -141,7 +141,8 @@ namespace netgen
     Array<SurfaceElementIndex> locelements(0);
     Array<int> locrots(0);
 
-    for (PointIndex pi = mesh.Points().Begin(); pi < mesh.Points().End(); pi++)
+    for (PointIndex pi = PointIndex::BASE; 
+	 pi < mesh.GetNP()+PointIndex::BASE; pi++)
       {
 	if (mesh[pi].Type() != SURFACEPOINT)
 	  continue;

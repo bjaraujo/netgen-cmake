@@ -106,9 +106,9 @@ namespace netgen
       {
 	const INDEX_3 & el = faces[j];
 
-	double bad = CalcTetBadness (points[PointIndex (el.I1())], 
-				     points[PointIndex (el.I3())], 
-				     points[PointIndex (el.I2())], 
+	double bad = CalcTetBadness (points[el.I1()], 
+				     points[el.I3()], 
+				     points[el.I2()], 
 				     pp, 0, mp);
 	badness += bad;
       }
@@ -202,9 +202,9 @@ namespace netgen
   
     for (int i = 1; i <= nf; i++)
       {
-	const Point3d & p1 = points[PointIndex(faces.Get(i).I1())];
-	const Point3d & p2 = points[PointIndex(faces.Get(i).I2())];
-	const Point3d & p3 = points[PointIndex(faces.Get(i).I3())];
+	const Point3d & p1 = points[faces.Get(i).I1()];
+	const Point3d & p2 = points[faces.Get(i).I2()];
+	const Point3d & p3 = points[faces.Get(i).I3()];
 	Vec3d v1 (p1, p2);
 	Vec3d v2 (p1, p3);
 	Vec3d n;
@@ -500,7 +500,7 @@ namespace netgen
 
     int ne = elementsonpoint[actpind].Size();
     int i, j;
-    PointIndex pi1, pi2, pi3;
+    int pi1, pi2, pi3;
 
     m.SetSize (ne, 4);
 
@@ -1383,7 +1383,7 @@ void Mesh :: ImproveMesh (const MeshingParameters & mp, OPTIMIZEGOAL goal)
 	  bad1 += hbad;
 	}
       
-      for (int i = perrs.Begin(); i < perrs.End(); i++)
+      for (PointIndex i = PointIndex::BASE; i < np+PointIndex::BASE; i++)
 	if (perrs[i] > badmax) 
 	  badmax = perrs[i];
       badmax = 0;
@@ -1456,13 +1456,14 @@ void Mesh :: ImproveMesh (const MeshingParameters & mp, OPTIMIZEGOAL goal)
   const char * savetask = multithread.task;
   multithread.task = "Smooth Mesh";
   
-  for (PointIndex pi = points.Begin(); pi < points.End(); pi++)
-    if ( (*this)[pi].Type() == INNERPOINT && perrs[pi] > 0.01 * badmax)
+  for (PointIndex i = PointIndex::BASE; 
+       i < points.Size()+PointIndex::BASE; i++)
+    if ( (*this)[i].Type() == INNERPOINT && perrs[i] > 0.01 * badmax)
       {
 	if (multithread.terminate)
 	  throw NgException ("Meshing stopped");
 
-	multithread.percent = 100.0 * (pi+1-PointIndex::BASE) / points.Size();
+	multithread.percent = 100.0 * (i+1-PointIndex::BASE) / points.Size();
         /*
 	if (points.Size() < 1000)
 	  PrintDot ();
@@ -1470,14 +1471,14 @@ void Mesh :: ImproveMesh (const MeshingParameters & mp, OPTIMIZEGOAL goal)
 	  if ( (i+1-PointIndex::BASE) % 10 == 0)
 	    PrintDot ('+');
         */
-        if (  (pi+1-PointIndex::BASE) % printmod == 0) PrintDot (printdot);
+        if (  (i+1-PointIndex::BASE) % printmod == 0) PrintDot (printdot);
 
-	double lh = pointh[pi];
+	double lh = pointh[i];
 	pf->SetLocalH (lh);
 	par.typx = lh;
 
-	freeminf.SetPoint (points[pi]);
-	pf->SetPointIndex (pi);
+	freeminf.SetPoint (points[i]);
+	pf->SetPointIndex (i);
 
 	x = 0;
 	int pok;
@@ -1487,8 +1488,8 @@ void Mesh :: ImproveMesh (const MeshingParameters & mp, OPTIMIZEGOAL goal)
 	  {
 	    pok = pf->MovePointToInner ();
 
-	    freeminf.SetPoint (points[pi]);
-	    pf->SetPointIndex (pi);
+	    freeminf.SetPoint (points[i]);
+	    pf->SetPointIndex (i);
 	  }
 
 	if (pok)
@@ -1496,9 +1497,9 @@ void Mesh :: ImproveMesh (const MeshingParameters & mp, OPTIMIZEGOAL goal)
             //*testout << "start BFGS, pok" << endl;
 	    BFGS (x, freeminf, par);
             //*testout << "BFGS complete, pok" << endl;
-	    points[pi](0) += x(0);
-	    points[pi](1) += x(1);
-	    points[pi](2) += x(2);
+	    points[i](0) += x(0);
+	    points[i](1) += x(1);
+	    points[i](2) += x(2);
 	  }
       }
   PrintDot ('\n');
@@ -1580,9 +1581,9 @@ void Mesh :: ImproveMeshJacobian (const MeshingParameters & mp,
   const char * savetask = multithread.task;
   multithread.task = "Smooth Mesh Jacobian";
   
-  for (PointIndex pi = points.Begin(); i < points.End(); pi++)
+  for (i = 1; i <= points.Size(); i++)
     {
-      if ((*this)[pi].Type() != INNERPOINT)
+      if ((*this)[PointIndex(i)].Type() != INNERPOINT)
 	continue;
 
       if(usepoint && !usepoint->Test(i))
@@ -1612,7 +1613,7 @@ void Mesh :: ImproveMeshJacobian (const MeshingParameters & mp,
       double lh = pointh[i];
       par.typx = lh;
 
-      pf.SetPointIndex (pi);
+      pf.SetPointIndex (i);
 
       x = 0;
       int pok = (pf.Func (x) < 1e10); 
@@ -1734,7 +1735,7 @@ void Mesh :: ImproveMeshJacobianOnSurface (const MeshingParameters & mp,
   const char * savetask = multithread.task;
   multithread.task = "Smooth Mesh Jacobian";
   
-  for (PointIndex pi = points.Begin(); pi <= points.End(); pi++)
+  for (i = 1; i <= points.Size(); i++)
     if ( usepoint.Test(i) )
       {
 	//(*testout) << "improvejac, p = " << i << endl;
@@ -1761,9 +1762,9 @@ void Mesh :: ImproveMeshJacobianOnSurface (const MeshingParameters & mp,
 	double lh = pointh[i];//GetH(points.Get(i));
 	par.typx = lh;
 
-	pf.SetPointIndex (pi);
+	pf.SetPointIndex (i);
 
-	PointIndex brother (-1);
+	int brother = -1;
 	if(usesum)
 	  {
 	    for(j=0; brother == -1 && j<used_idmaps->Size(); j++)

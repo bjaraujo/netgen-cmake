@@ -17,7 +17,6 @@
 #include <stlgeom.hpp>
 #include <geometry2d.hpp>
 #include <meshing.hpp>
-#include <../visualization/soldata.hpp>
 
 #ifdef OCCGEOMETRY
 #include <occgeom.hpp>
@@ -1227,10 +1226,7 @@ namespace netgen
 
 void Ng_Redraw () { ; }
 void Ng_ClearSolutionData () { ; }
-void Ng_SetSolutionData (Ng_SolutionData * soldata) 
-{ 
-  delete soldata->solclass;
-}
+void Ng_SetSolutionData (Ng_SolutionData * soldata) { ; }
 void Ng_InitSolutionData (Ng_SolutionData * soldata) { ; }
 
 

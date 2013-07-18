@@ -416,8 +416,14 @@ void MeshOptimize3d :: SplitImprove (Mesh & mesh,
 		  if (el[l] == pi2) has2 = 1;
 		}
 	      if (has1 && has2) 
-		if (!hasbothpoints.Contains (elnr))
-		  hasbothpoints.Append (elnr);
+		{ // only once
+		  for (l = 0; l < hasbothpoints.Size(); l++)
+		    if (hasbothpoints[l] == elnr)
+		      has1 = 0;
+		  
+		  if (has1)
+		    hasbothpoints.Append (elnr);
+		}
 	    }
 	  
 	  bad1 = 0;
@@ -746,7 +752,7 @@ void MeshOptimize3d :: SwapImprove (Mesh & mesh, OPTIMIZEGOAL goal,
 		}
 	      
 	      pi5 = 0;
-	      for (int k = 0; k < 3; k++)   // JS, 201212
+	      for (int k = 1; k < 3; k++)
 		{
 		  const Element & elemk = mesh[hasbothpoints[k]];
 		  bool has1 = 0;
@@ -899,7 +905,7 @@ void MeshOptimize3d :: SwapImprove (Mesh & mesh, OPTIMIZEGOAL goal,
 		}
 	      
 	      pi5 = 0;
-	      for (int k = 0; k < 4; k++)
+	      for (int k = 1; k < 4; k++)
 		{
 		  const Element & elem = mesh[hasbothpoints[k]];
 		  bool has1 = 0;
@@ -915,7 +921,7 @@ void MeshOptimize3d :: SwapImprove (Mesh & mesh, OPTIMIZEGOAL goal,
 		}
 	      
 	      pi6 = 0;
-	      for (int k = 0; k < 4; k++)
+	      for (int k = 1; k < 4; k++)
 		{
 		  const Element & elem = mesh[hasbothpoints[k]];
 		  bool has1 = 0;
@@ -929,8 +935,7 @@ void MeshOptimize3d :: SwapImprove (Mesh & mesh, OPTIMIZEGOAL goal,
 			  pi6 = elem[l];
 		    }
 		}
-
-
+	      
 	      /*
 	      INDEX_2 i22(pi3, pi5);
 	      i22.Sort();
@@ -1144,7 +1149,7 @@ void MeshOptimize3d :: SwapImprove (Mesh & mesh, OPTIMIZEGOAL goal,
 		  mesh[hasbothpoints[1]] = el2;
 		  mesh[hasbothpoints[2]] = el3;
 		  mesh[hasbothpoints[3]] = el4;
-
+		  
 		  for (int k = 0; k < 4; k++)
 		    for (int l = 0; l < 4; l++)
 		      elementsonnode.Add (mesh[hasbothpoints[k]][l], hasbothpoints[k]);
@@ -1176,6 +1181,7 @@ void MeshOptimize3d :: SwapImprove (Mesh & mesh, OPTIMIZEGOAL goal,
 		  mesh[hasbothpoints[1]] = el2b;
 		  mesh[hasbothpoints[2]] = el3b;
 		  mesh[hasbothpoints[3]] = el4b;
+
 
 		  for (int k = 0; k < 4; k++)
 		    for (int l = 0; l < 4; l++)

@@ -49,12 +49,14 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-LTLIBRARIES = $(noinst_LTLIBRARIES)
-libvisual_la_LIBADD =
-am_libvisual_la_OBJECTS = meshdoc.lo mvdraw.lo vsfieldlines.lo \
-	vsmesh.lo vssolution.lo importsolution.lo
-libvisual_la_OBJECTS = $(am_libvisual_la_OBJECTS)
-@NGGUI_TRUE@am_libvisual_la_rpath =
+LIBRARIES = $(noinst_LIBRARIES)
+ARFLAGS = cru
+libvisual_a_AR = $(AR) $(ARFLAGS)
+libvisual_a_LIBADD =
+am_libvisual_a_OBJECTS = meshdoc.$(OBJEXT) mvdraw.$(OBJEXT) \
+	vsfieldlines.$(OBJEXT) vsmesh.$(OBJEXT) vssolution.$(OBJEXT) \
+	importsolution.$(OBJEXT)
+libvisual_a_OBJECTS = $(am_libvisual_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -68,8 +70,8 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libvisual_la_SOURCES)
-DIST_SOURCES = $(libvisual_la_SOURCES)
+SOURCES = $(libvisual_a_SOURCES)
+DIST_SOURCES = $(libvisual_a_SOURCES)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -162,7 +164,6 @@ OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 OCCFLAGS = @OCCFLAGS@
 OCCLIBS = @OCCLIBS@
-OPENMP_CXXFLAGS = @OPENMP_CXXFLAGS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -204,7 +205,6 @@ TCL_STUB_LIB_FLAG = @TCL_STUB_LIB_FLAG@
 TCL_STUB_LIB_SPEC = @TCL_STUB_LIB_SPEC@
 TCL_VERSION = @TCL_VERSION@
 TK_BIN_DIR = @TK_BIN_DIR@
-TK_INCLUDES = @TK_INCLUDES@
 TK_LIBS = @TK_LIBS@
 TK_LIB_FILE = @TK_LIB_FILE@
 TK_LIB_FLAG = @TK_LIB_FLAG@
@@ -275,12 +275,13 @@ noinst_HEADERS = meshdoc.hpp mvdraw.hpp vispar.hpp \
 visual.hpp vssolution.hpp
 
 include_HEADERS = soldata.hpp
-AM_CPPFLAGS = $(MPI_INCLUDES) -I$(top_srcdir)/libsrc/include  -DOPENGL -D$(TOGL_WINDOWINGSYSTEM) $(OCCFLAGS) $(TCL_INCLUDES)
+AM_CPPFLAGS = $(MPI_INCLUDES) -I$(top_srcdir)/libsrc/include  -DOPENGL -D$(TOGL_WINDOWINGSYSTEM) $(OCCFLAGS)    $(TCL_INCLUDES)
 METASOURCES = AUTO
-@NGGUI_TRUE@noinst_LTLIBRARIES = libvisual.la
-libvisual_la_SOURCES = meshdoc.cpp mvdraw.cpp \
+@NGGUI_TRUE@noinst_LIBRARIES = libvisual.a
+libvisual_a_SOURCES = meshdoc.cpp mvdraw.cpp \
 	vsfieldlines.cpp vsmesh.cpp vssolution.cpp importsolution.cpp
 
+AM_CXXFLAGS = -DOPENGL
 all: all-am
 
 .SUFFIXES:
@@ -316,16 +317,12 @@ $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
-libvisual.la: $(libvisual_la_OBJECTS) $(libvisual_la_DEPENDENCIES) $(EXTRA_libvisual_la_DEPENDENCIES) 
-	$(CXXLINK) $(am_libvisual_la_rpath) $(libvisual_la_OBJECTS) $(libvisual_la_LIBADD) $(LIBS)
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+libvisual.a: $(libvisual_a_OBJECTS) $(libvisual_a_DEPENDENCIES) $(EXTRA_libvisual_a_DEPENDENCIES) 
+	-rm -f libvisual.a
+	$(libvisual_a_AR) libvisual.a $(libvisual_a_OBJECTS) $(libvisual_a_LIBADD)
+	$(RANLIB) libvisual.a
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -333,12 +330,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/importsolution.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/meshdoc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mvdraw.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vsfieldlines.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vsmesh.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vssolution.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/importsolution.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/meshdoc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mvdraw.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vsfieldlines.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vsmesh.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vssolution.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -469,7 +466,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(HEADERS)
+all-am: Makefile $(LIBRARIES) $(HEADERS)
 installdirs:
 	for dir in "$(DESTDIR)$(includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -507,7 +504,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
+clean-am: clean-generic clean-libtool clean-noinstLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -579,7 +576,7 @@ uninstall-am: uninstall-includeHEADERS
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstLTLIBRARIES ctags distclean \
+	clean-libtool clean-noinstLIBRARIES ctags distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
